@@ -1,0 +1,22 @@
+buildscript {
+    repositories {
+        maven { url 'https://maven.aliyun.com/repository/public' } // 国内加速
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath "com.android.tools.build:gradle:8.13.0"
+    }
+}
+
+allprojects {
+    repositories {
+        maven { url 'https://maven.aliyun.com/repository/public' } // 国内加速
+        google()
+        mavenCentral()
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}

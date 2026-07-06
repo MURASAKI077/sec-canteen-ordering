@@ -1,0 +1,26 @@
+# Android / Gradle 构建产物
+**/.gradle/
+**/build/
+**/captures/
+**/.externalNativeBuild/
+**/.cxx/
+
+# 本机专属配置
+**/local.properties
+
+# IDE
+**/.idea/
+*.iml
+.vscode/
+
+# 服务端
+server-servlet/target/
+server-servlet/src/main/resources/db.properties
+
+# 系统杂项
+.DS_Store
+Thumbs.db
+
+# 保留 Gradle Wrapper
+!client-android/gradle/wrapper/gradle-wrapper.jar
+!client-android/gradle/wrapper/gradle-wrapper.properties
