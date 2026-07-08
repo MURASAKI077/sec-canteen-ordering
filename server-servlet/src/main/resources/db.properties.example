@@ -1,0 +1,6 @@
+# Copy this file to db.properties and fill in your local MySQL password.
+# Do not commit the real db.properties file.
+
+db.url=jdbc:mysql://localhost:3306/sec_database?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai
+db.user=root
+db.password=123456
