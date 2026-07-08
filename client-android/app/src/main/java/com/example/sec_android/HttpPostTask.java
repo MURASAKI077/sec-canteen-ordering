@@ -1,7 +1,7 @@
 package com.example.sec_android;
 
-import android.os.AsyncTask;
 import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -11,97 +11,117 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
-/**
- * 网络通信异步任务类
- *
- * @author WangJ
- */
-public class HttpPostTask extends AsyncTask<String, String, String> {
+public class HttpPostTask {
 
-    /** BaseActivity 中基础问题的处理 handler */
-    private Handler mHandler;
+    // 使用线程池
+    private static final ExecutorService EXECUTOR = Executors.newFixedThreadPool(4);
 
-    /** 返回信息处理回调接口 */
-    private ResponseHandler rHandler;
+    // 所有回调都切回主线程，避免在子线程更新界面
+    private static final Handler MAIN = new Handler(Looper.getMainLooper());
 
-    /** 请求类对象 */
-    private CommonRequest request;
+    private final CommonRequest request;
+    private final Handler mHandler;
+    private final ResponseHandler rHandler;
 
-    public HttpPostTask(CommonRequest request,
-                        Handler mHandler,
-                        ResponseHandler rHandler) {
+    public HttpPostTask(CommonRequest request, Handler mHandler, ResponseHandler rHandler) {
         this.request = request;
         this.mHandler = mHandler;
         this.rHandler = rHandler;
     }
 
-    @Override
-    protected String doInBackground(String... params) {
+
+    public void execute(String urlStr) {
+        EXECUTOR.execute(() -> {
+            String result = doPost(urlStr);
+            MAIN.post(() -> onPostExecute(result));
+        });
+    }
+
+    private String doPost(String urlStr) {
         StringBuilder resultBuf = new StringBuilder();
+        HttpURLConnection connection = null;
+
         try {
-            Log.d("Post发送URL",params[0]);
-            URL url = new URL(params[0]);
+            Log.d("Post发送URL", urlStr);
 
-            // 第一步：使用URL打开一个HttpURLConnection连接
-            HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+            URL url = new URL(urlStr);
+            connection = (HttpURLConnection) url.openConnection();
 
-            // 第二步：设置HttpURLConnection连接相关属性
+            // 设置 POST + JSON 请求
             connection.setRequestProperty("Content-Type", "application/json;charset=utf-8");
-            connection.setRequestMethod("POST"); // 设置请求方法，“POST或GET”
-            connection.setConnectTimeout(80000); // 设置连接建立的超时时间
-            connection.setReadTimeout(80000); // 设置网络报文收发超时时间
+            connection.setRequestMethod("POST");
+            connection.setConnectTimeout(10000);
+            connection.setReadTimeout(10000);
             connection.setDoOutput(true);
             connection.setDoInput(true);
 
-            // 如果是POST方法，需要在第3步获取输入流之前向连接写入POST参数
-            DataOutputStream out = new DataOutputStream(connection.getOutputStream());
-            //非常关键，得以解析中文！！！
-            String s = request.getJsonStr();
-            out.write(s.getBytes());
-            Log.d("Post参数",request.getJsonStr());
-            out.flush();
+            String requestBody = request.getJsonStr();
 
-            // 第三步：打开连接输入流读取返回报文 -> *注意*在此步骤才真正开始网络请求
+            // 写入请求体，使用 UTF-8 保证中文参数正常传输
+            try (DataOutputStream out = new DataOutputStream(connection.getOutputStream())) {
+                out.write(requestBody.getBytes(StandardCharsets.UTF_8));
+                out.flush();
+            }
+
+            Log.d("Post参数", requestBody);
+
             int responseCode = connection.getResponseCode();
             Log.d("PostTask返回值", String.valueOf(responseCode));
+
             if (responseCode == HttpURLConnection.HTTP_OK) {
-                // 通过连接的输入流获取下发报文，然后就是Java的流处理
                 InputStream in = connection.getInputStream();
-                BufferedReader read = new BufferedReader(new InputStreamReader(in));
+                BufferedReader read = new BufferedReader(
+                        new InputStreamReader(in, StandardCharsets.UTF_8)
+                );
+
                 String line;
-                while((line = read.readLine()) != null) {
+                while ((line = read.readLine()) != null) {
                     resultBuf.append(line);
                 }
-                return resultBuf.toString();
+
+                read.close();
             } else {
-                // 异常情况，如404/500...
-                mHandler.obtainMessage(Constant.HANDLER_HTTP_RECEIVE_FAIL,
-                        "[" + responseCode + "]" + connection.getResponseMessage()).sendToTarget();
+                sendHandlerMessage(
+                        Constant.HANDLER_HTTP_RECEIVE_FAIL,
+                        "[" + responseCode + "]" + connection.getResponseMessage()
+                );
             }
         } catch (IOException e) {
-            // 网络请求过程中发生IO异常
-            mHandler.obtainMessage(Constant.HANDLER_HTTP_SEND_FAIL,
-                    e.getClass().getName() + " : " + e.getMessage()).sendToTarget();
+            sendHandlerMessage(
+                    Constant.HANDLER_HTTP_SEND_FAIL,
+                    e.getClass().getName() + " : " + e.getMessage()
+            );
+        } finally {
+            if (connection != null) {
+                connection.disconnect();
+            }
         }
+
         return resultBuf.toString();
     }
 
-    @Override
-    protected void onPostExecute(String result) {
-        if (rHandler != null) {
-            if (!"".equals(result)) {
-                /* 交易成功时需要在处理返回结果时手动关闭Loading对话框，可以灵活处理连续请求多个接口时Loading框不断弹出、关闭的情况 */
+    private void onPostExecute(String result) {
+        if (rHandler == null || "".equals(result)) {
+            return;
+        }
 
-                CommonResponse response = new CommonResponse(result);
-                // 这里response.getResCode()为多少表示业务完成也是和服务器约定好的
-                if ("0".equals(response.getResCode())) { // 正确
-                    rHandler.success(response);
-                } else {
-                    rHandler.fail(response.getResCode(), response.getResMsg());
-                }
-            }
+        CommonResponse response = new CommonResponse(result);
+
+        // resCode 为 0 表示业务成功，其余交给 fail 回调处理
+        if ("0".equals(response.getResCode())) {
+            rHandler.success(response);
+        } else {
+            rHandler.fail(response.getResCode(), response.getResMsg());
         }
     }
 
+    private void sendHandlerMessage(int what, String message) {
+        if (mHandler != null) {
+            mHandler.obtainMessage(what, message).sendToTarget();
+        }
+    }
 }
