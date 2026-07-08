@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 全组可复用文本样式。 -->
+    <style name="UiTextTitle">
+        <item name="android:textColor">@color/ui_text_main</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="UiTextBody">
+        <item name="android:textColor">@color/ui_text_main</item>
+        <item name="android:textSize">16sp</item>
+    </style>
+
+    <style name="UiTextTableHeader">
+        <item name="android:textColor">@color/ui_accent</item>
+        <item name="android:textSize">18sp</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:gravity">center</item>
+    </style>
+
+    <style name="UiTopBarText">
+        <item name="android:textColor">@color/ui_text_inverse</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="UiButtonCommon">
+        <item name="android:background">@drawable/selector_btn_common</item>
+        <item name="android:textColor">@drawable/selector_tc_common</item>
+        <item name="android:textSize">18sp</item>
+    </style>
+</resources>

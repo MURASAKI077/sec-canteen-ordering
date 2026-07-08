@@ -3,36 +3,33 @@
 
     <item android:state_enabled="false">
         <shape>
-            <corners android:radius="5dp" />
-
-            <solid android:color="#CBC6C6" />
-
-            <stroke android:width="0.5dp"
-                 android:color="@color/white" />
+            <corners android:radius="8dp" />
+            <solid android:color="@color/ui_disabled" />
+            <stroke
+                android:width="0.5dp"
+                android:color="@color/ui_divider" />
         </shape>
     </item>
     
     <item android:state_enabled="true"
-         android:state_pressed="false">
+        android:state_pressed="false">
         <shape>
-            <corners android:radius="5dp" />
-
-            <solid android:color="#FAB724" />
-
-            <stroke android:width="0.5dp"
-                 android:color="#CBC6C6" />
+            <corners android:radius="8dp" />
+            <solid android:color="@color/ui_primary" />
+            <stroke
+                android:width="0.5dp"
+                android:color="@color/ui_primary_dark" />
         </shape>
     </item>
     
     <item android:state_enabled="true"
          android:state_pressed="true">
         <shape>
-            <corners android:radius="5dp" />
-
-            <solid android:color="#CBC6C6" />
-
-            <stroke android:width="0.5dp"
-                 android:color="#FAB724" />
+            <corners android:radius="8dp" />
+            <solid android:color="@color/ui_primary_dark" />
+            <stroke
+                android:width="0.5dp"
+                android:color="@color/ui_primary" />
         </shape>
     </item>
 

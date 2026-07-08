@@ -1,51 +1,45 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg4"
-    >
+    android:background="@drawable/bg4">
 
     <RelativeLayout
         android:id="@+id/rl_personal_top"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:background="#3F51B5" >
+        android:background="@color/ui_primary">
 
         <TextView
             android:id="@+id/tv_personal_tip"
+            style="@style/UiTopBarText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginLeft="10dp"
-            android:text="用户名："
-            android:textColor="#fff"
-            android:textSize="20dp" />
+            android:text="@string/username_label" />
+
         <TextView
             android:id="@+id/tv_personal_account"
+            style="@style/UiTopBarText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
             android:layout_marginLeft="0dp"
             android:layout_toRightOf="@+id/tv_personal_tip"
-            android:text=""
-            android:textColor="#fff"
-            android:textSize="20dp" />
+            android:text="" />
+
         <TextView
             android:id="@+id/tv_personal_exit"
+            style="@style/UiTopBarText"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="退出"
-            android:textColor="#fff"
-            android:textSize="20dp"
+            android:text="@string/exit"
             android:layout_centerVertical="true"
             android:layout_alignParentRight="true"
             android:layout_marginRight="10dp"
-            android:clickable="true"
-            android:onClick="onClick"
-            />
+            android:clickable="true" />
     </RelativeLayout>
 
     <LinearLayout
@@ -62,13 +56,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginTop="10dp">
+            android:layout_marginTop="10dp"
+            android:background="@drawable/shape_section_card"
+            android:padding="8dp">
 
             <TextView
+                style="@style/UiTextTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="20dp"
-                android:text="我的收藏"/>
+                android:text="@string/my_favorite" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
@@ -79,46 +76,34 @@
                 >
 
                 <TextView
+                    style="@style/UiTextTableHeader"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:gravity="center"
-                    android:text="餐厅"
-                    android:textAlignment="center"
-                    android:textColor="#4CAF50"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    android:text="@string/restaurant"
+                    android:textAlignment="center" />
 
                 <TextView
+                    style="@style/UiTextTableHeader"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="2"
-                    android:gravity="center"
-                    android:text="窗口"
-                    android:textColor="#4CAF50"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    android:text="@string/window" />
 
 
                 <TextView
+                    style="@style/UiTextTableHeader"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="2"
-                    android:gravity="center"
-                    android:text="菜品名称"
-                    android:textColor="#4CAF50"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    android:text="@string/dish_name" />
 
                 <TextView
+                    style="@style/UiTextTableHeader"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:gravity="center"
-                    android:text="价格"
-                    android:textColor="#4CAF50"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    android:text="@string/price" />
             </LinearLayout>
 
             <ListView
@@ -134,12 +119,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginTop="10dp">
+            android:layout_marginTop="10dp"
+            android:background="@drawable/shape_section_card"
+            android:padding="8dp">
+
             <TextView
+                style="@style/UiTextTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="20dp"
-                android:text="我的订单"/>
+                android:text="@string/my_order" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
@@ -150,46 +139,34 @@
                 >
 
                 <TextView
+                    style="@style/UiTextTableHeader"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:gravity="center"
-                    android:text="餐厅"
-                    android:textAlignment="center"
-                    android:textColor="#4CAF50"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    android:text="@string/restaurant"
+                    android:textAlignment="center" />
 
                 <TextView
+                    style="@style/UiTextTableHeader"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="2"
-                    android:gravity="center"
-                    android:text="窗口"
-                    android:textColor="#4CAF50"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    android:text="@string/window" />
 
 
                 <TextView
+                    style="@style/UiTextTableHeader"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="2"
-                    android:gravity="center"
-                    android:text="菜品名称"
-                    android:textColor="#4CAF50"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    android:text="@string/dish_name" />
 
                 <TextView
+                    style="@style/UiTextTableHeader"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
-                    android:gravity="center"
-                    android:text="价格"
-                    android:textColor="#4CAF50"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    android:text="@string/price" />
             </LinearLayout>
 
             <ListView
