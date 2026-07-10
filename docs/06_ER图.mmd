@@ -1,0 +1,22 @@
+erDiagram
+    account ||--o{ orders : places
+    dishes ||--o{ orders : contains
+
+    account {
+        INT userId PK
+        TEXT userAccount
+        TEXT userPassword
+    }
+
+    dishes {
+        INT dishId PK
+        VARCHAR dishName
+        VARCHAR dishWindow
+        VARCHAR dishRoom
+        FLOAT price
+    }
+
+    orders {
+        INT userId FK
+        INT dishId FK
+    }
