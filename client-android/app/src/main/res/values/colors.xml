@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Android Studio default palette, kept for generated launcher/theme compatibility. -->
     <color name="purple_200">#FFBB86FC</color>
     <color name="purple_500">#FF6200EE</color>
     <color name="purple_700">#FF3700B3</color>
@@ -8,48 +9,54 @@
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
 
+    <!-- 全组 UI 主题色：其他页面优先引用 ui_*，不要直接硬编码色值。 -->
+    <color name="ui_primary">#3F51B5</color>
+    <color name="ui_primary_dark">#303F9F</color>
+    <color name="ui_accent">#4CAF50</color>
+    <color name="ui_background">#F5F7FA</color>
+    <color name="ui_surface">#FFFFFFFF</color>
+    <color name="ui_surface_soft">#EEF2F7</color>
+    <color name="ui_divider">#DADDE3</color>
+    <color name="ui_input_border">#8BC7D3</color>
+    <color name="ui_text_main">#222222</color>
+    <color name="ui_text_secondary">#666666</color>
+    <color name="ui_text_hint">#999999</color>
+    <color name="ui_text_inverse">#FFFFFFFF</color>
+    <color name="ui_danger">#F44336</color>
+    <color name="ui_disabled">#CBC6C6</color>
+    <color name="ui_transparent">#00FFFFFF</color>
+
+    <!-- Backward-compatible names used by existing layouts and utilities. -->
     <color name="colorPrimary">#3F51B5</color>
-    <color name="colorPrimaryDark">#000000</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorPrimaryDark">#303F9F</color>
+    <color name="colorAccent">#4CAF50</color>
     <color name="color_minefragment_top">#3F51B5</color>
     <color name="ccheck">#FF888888</color>
     <color name="cnocheck">#3F51B5</color>
-
-
-    <!-- 通用颜色 -->
     <color name="transparent">#00FFFFFF</color>
-    <color name="background">#F5F5F5</color>
+    <color name="background">#F5F7FA</color>
 
-
-
-    <!-- 控件颜色（ViewColor简写为VC） -->
-    <color name="VC_solid">#E5E5EA</color>
-    <color name="VC_stroke">#C6C9CB</color>
+    <!-- 控件颜色（ViewColor 简写为 VC），保留旧名称供现有组件引用。 -->
+    <color name="VC_solid">#EEF2F7</color>
+    <color name="VC_stroke">#DADDE3</color>
     <color name="VC_divide_line">#A7AAAD</color>
 
-
-
-    <!-- 文字颜色（TextColor简写为TC） -->
-    <color name="TC_common">#4B4B4B</color>
+    <!-- 文字颜色（TextColor 简写为 TC），保留旧名称供现有组件引用。 -->
+    <color name="TC_common">#222222</color>
     <color name="TC_cannot_edit">#859090</color>
-    <color name="TC_edit">#201f20</color>
-    <color name="TC_edit_hint">#e09e5e</color>
+    <color name="TC_edit">#201F20</color>
+    <color name="TC_edit_hint">#999999</color>
 
-
-
+    <!-- Legacy colors from the original project resources. -->
     <color name="nbcb_theme">#FAB724</color>
     <color name="theme_rose">#E71B64</color>
-    <color name="window_bg">#efefef</color>
+    <color name="window_bg">#EFEFEF</color>
     <color name="line_color">#C1B9B9</color>
     <color name="view_color">#C1B9B9</color>
     <color name="bluegreen">#90F2B8</color>
-
-
-    <!-- 多客户列表不同客户类型Item背景色 -->
     <color name="custType_4">#FFBF04</color>
     <color name="custType_5">#C4BFC4</color>
     <color name="custType_6">#74E598</color>
     <color name="custType_7">#C46FE8</color>
     <color name="custType_8">#ED6F7C</color>
-
 </resources>

@@ -3,7 +3,7 @@
     <item 
         android:state_enabled="false">
         <shape >
-            <solid android:color="#b5b5b5"/>
+            <solid android:color="@color/ui_disabled"/>
             <corners 
                 android:bottomLeftRadius="5dp"/>
         </shape>
@@ -11,7 +11,7 @@
     <item 
         android:state_pressed="true">
         <shape >
-            <solid android:color="@color/window_bg"/>
+            <solid android:color="@color/ui_surface_soft"/>
             <corners 
                 android:bottomLeftRadius="5dp"/>
         </shape>
@@ -19,14 +19,14 @@
     <item 
         android:state_focused="true">
         <shape >
-            <solid android:color="@color/theme_rose"/>
+            <solid android:color="@color/ui_primary"/>
             <corners 
                 android:bottomLeftRadius="5dp"/>
         </shape>
     </item>
 	<item>
         <shape >
-            <solid android:color="@color/white"/>
+            <solid android:color="@color/ui_surface"/>
             <corners 
                 android:bottomLeftRadius="5dp"/>
         </shape>
