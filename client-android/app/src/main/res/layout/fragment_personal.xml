@@ -1,15 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/bg4">
+    android:background="@drawable/bg4"
+    android:orientation="vertical">
 
     <RelativeLayout
         android:id="@+id/rl_personal_top"
         android:layout_width="match_parent"
         android:layout_height="50dp"
-        android:background="@color/ui_primary">
+        android:background="@color/ui_primary"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp">
 
         <TextView
             android:id="@+id/tv_personal_tip"
@@ -17,7 +19,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:layout_marginLeft="10dp"
             android:text="@string/username_label" />
 
         <TextView
@@ -26,159 +27,102 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:layout_marginLeft="0dp"
-            android:layout_toRightOf="@+id/tv_personal_tip"
-            android:text="" />
+            android:layout_toEndOf="@id/tv_personal_tip"
+            android:layout_toStartOf="@id/tv_personal_exit"
+            android:layout_marginEnd="8dp"
+            android:ellipsize="end"
+            android:maxLines="1" />
 
         <TextView
             android:id="@+id/tv_personal_exit"
             style="@style/UiTopBarText"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/exit"
-            android:layout_centerVertical="true"
-            android:layout_alignParentRight="true"
-            android:layout_marginRight="10dp"
-            android:clickable="true" />
+            android:layout_height="match_parent"
+            android:layout_alignParentEnd="true"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:paddingStart="12dp"
+            android:paddingEnd="2dp"
+            android:text="@string/exit" />
     </RelativeLayout>
 
     <LinearLayout
+        android:id="@+id/myOrder"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_below="@+id/rl_personal_top"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginStart="8dp"
         android:layout_marginTop="10dp"
-        android:layout_marginLeft="5dp"
-        android:layout_marginRight="5dp"
-        >
-        <LinearLayout
-            android:id="@+id/myFavo"
-            android:layout_width="match_parent"
+        android:layout_marginEnd="8dp"
+        android:layout_marginBottom="8dp"
+        android:background="@drawable/shape_section_card"
+        android:orientation="vertical"
+        android:padding="8dp">
+
+        <TextView
+            style="@style/UiTextTitle"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="10dp"
-            android:background="@drawable/shape_section_card"
-            android:padding="8dp">
+            android:text="@string/my_order" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="3dp">
 
             <TextView
-                style="@style/UiTextTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/my_favorite" />
+                style="@style/UiTextTableHeader"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="@string/restaurant" />
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="3dp"
-                android:layout_marginTop="0dp"
-                >
+            <TextView
+                style="@style/UiTextTableHeader"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="2"
+                android:text="@string/window" />
 
-                <TextView
-                    style="@style/UiTextTableHeader"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:text="@string/restaurant"
-                    android:textAlignment="center" />
+            <TextView
+                style="@style/UiTextTableHeader"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="2"
+                android:text="@string/dish_name" />
 
-                <TextView
-                    style="@style/UiTextTableHeader"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="2"
-                    android:text="@string/window" />
-
-
-                <TextView
-                    style="@style/UiTextTableHeader"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="2"
-                    android:text="@string/dish_name" />
-
-                <TextView
-                    style="@style/UiTextTableHeader"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:text="@string/price" />
-            </LinearLayout>
-
-            <ListView
-                android:id="@+id/recycle_myFavo"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
-
+            <TextView
+                style="@style/UiTextTableHeader"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_weight="1"
+                android:text="@string/price" />
         </LinearLayout>
 
-
-        <LinearLayout
-            android:id="@+id/myOrder"
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginTop="10dp"
-            android:background="@drawable/shape_section_card"
-            android:padding="8dp">
-
-            <TextView
-                style="@style/UiTextTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/my_order" />
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:padding="3dp"
-                android:layout_marginTop="0dp"
-                >
-
-                <TextView
-                    style="@style/UiTextTableHeader"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:text="@string/restaurant"
-                    android:textAlignment="center" />
-
-                <TextView
-                    style="@style/UiTextTableHeader"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="2"
-                    android:text="@string/window" />
-
-
-                <TextView
-                    style="@style/UiTextTableHeader"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="2"
-                    android:text="@string/dish_name" />
-
-                <TextView
-                    style="@style/UiTextTableHeader"
-                    android:layout_width="0dp"
-                    android:layout_height="match_parent"
-                    android:layout_weight="1"
-                    android:text="@string/price" />
-            </LinearLayout>
+            android:layout_height="0dp"
+            android:layout_weight="1">
 
             <ListView
                 android:id="@+id/List_myOrder"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"/>
+                android:layout_height="match_parent"
+                android:divider="@color/ui_divider"
+                android:dividerHeight="1dp" />
 
-
-        </LinearLayout>
-
-
-
+            <TextView
+                android:id="@+id/tv_order_empty"
+                style="@style/UiTextBody"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:text="@string/order_history_empty"
+                android:textColor="@color/ui_text_secondary" />
+        </FrameLayout>
     </LinearLayout>
 
-</RelativeLayout>
+</LinearLayout>

@@ -10,6 +10,7 @@
     <string name="register">注册</string>
     <string name="exit">退出</string>
     <string name="exit_login">退出登录</string>
+    <string name="exit_login_confirm">确定要退出当前账号吗？</string>
     <string name="search">搜索</string>
 
     <!-- 个人中心与列表表头 -->
@@ -17,6 +18,7 @@
     <string name="username_label">用户名：</string>
     <string name="my_favorite">我的收藏</string>
     <string name="my_order">我的订单</string>
+    <string name="order_history_empty">暂无历史订单</string>
     <string name="restaurant">餐厅</string>
     <string name="window">窗口</string>
     <string name="dish_name">菜品名称</string>

@@ -2,69 +2,118 @@ package com.example.sec_android;
 
 import android.content.Intent;
 import android.os.Bundle;
-
-import androidx.fragment.app.Fragment;
-
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ListView;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+
 /**
- * A simple {@link Fragment} subclass.
- * Use the {@link PersonalFragment#newInstance} factory method to
- * create an instance of this fragment.
+ * M5 个人中心：显示当前账号、退出登录并承载历史订单列表。
  */
-public class PersonalFragment extends Fragment{
+public class PersonalFragment extends Fragment {
 
-    // TODO: Rename parameter arguments, choose names that match
-    // the fragment initialization parameters, e.g. ARG_ITEM_NUMBER
-    private static final String ARG_PARAM1 = "param1";
-    private static final String ARG_PARAM2 = "param2";
+    private TextView accountTextView;
+    private ListView orderListView;
+    private boolean redirectingToLogin;
 
-    // TODO: Rename and change types of parameters
-    private String mParam1;
-    private String mParam2;
-
-
-
-    public PersonalFragment() {
-        // Required empty public constructor
-    }
-
-    /**
-     * Use this factory method to create a new instance of
-     * this fragment using the provided parameters.
-     *
-     * @param param1 Parameter 1.
-     * @param param2 Parameter 2.
-     * @return A new instance of fragment Fragment_personal.
-     */
-    // TODO: Rename and change types and number of parameters
-    public static PersonalFragment newInstance(String param1, String param2) {
-        PersonalFragment fragment = new PersonalFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PARAM1, param1);
-        args.putString(ARG_PARAM2, param2);
-        fragment.setArguments(args);
-        return fragment;
-    }
-
+    @Nullable
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            mParam1 = getArguments().getString(ARG_PARAM1);
-            mParam2 = getArguments().getString(ARG_PARAM2);
+    public View onCreateView(@NonNull LayoutInflater inflater,
+                             @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        View view = inflater.inflate(R.layout.fragment_personal, container, false);
+
+        accountTextView = view.findViewById(R.id.tv_personal_account);
+        TextView exitTextView = view.findViewById(R.id.tv_personal_exit);
+        TextView emptyOrderTextView = view.findViewById(R.id.tv_order_empty);
+        orderListView = view.findViewById(R.id.List_myOrder);
+        orderListView.setEmptyView(emptyOrderTextView);
+
+        exitTextView.setOnClickListener(v -> showLogoutConfirmation());
+
+        if (!isLoggedIn()) {
+            view.post(this::redirectToLogin);
+            return view;
         }
+
+        refreshAccount();
+        loadOrderHistory();
+        return view;
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                             Bundle savedInstanceState) {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_personal, container, false);
+    public void onResume() {
+        super.onResume();
+        if (accountTextView == null) {
+            return;
+        }
+
+        if (!isLoggedIn()) {
+            redirectToLogin();
+            return;
+        }
+
+        redirectingToLogin = false;
+        refreshAccount();
     }
 
+    private boolean isLoggedIn() {
+        return Constant.landing && !TextUtils.isEmpty(Constant.account);
+    }
 
+    private void refreshAccount() {
+        accountTextView.setText(Constant.account);
+    }
+
+    private void showLogoutConfirmation() {
+        if (!isAdded()) {
+            return;
+        }
+
+        View.OnClickListener cancelListener = v -> DialogUtil.dismissDialog();
+        View.OnClickListener confirmListener = v -> {
+            DialogUtil.dismissDialog();
+            logout();
+        };
+
+        DialogUtil.showDecideDialogWithTitle(
+                requireContext(),
+                getString(R.string.exit_login),
+                getString(R.string.exit_login_confirm),
+                cancelListener,
+                confirmListener
+        );
+    }
+
+    private void logout() {
+        Constant.landing = false;
+        Constant.account = "";
+        redirectToLogin();
+    }
+
+    private void redirectToLogin() {
+        if (!isAdded() || redirectingToLogin) {
+            return;
+        }
+
+        redirectingToLogin = true;
+        Intent intent = new Intent(requireContext(), LoginActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        startActivity(intent);
+        requireActivity().finish();
+    }
+
+    private void loadOrderHistory() {
+        /*
+         * D 的并行开发分支尚未提供 OrderHistoryHelper。
+         * Helper 合入后在这里接入：
+         * OrderHistoryHelper.getOrderData(Constant.account, orderListView);
+         */
+    }
 }
