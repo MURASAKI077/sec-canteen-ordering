@@ -1,0 +1,6 @@
+2026-07-06 F 创建 documentation.txt，开始维护测试与文档进度。
+2026-07-06 F 阅读学长源码中的 DialogUtil、LoadingDialogUtil、LogUtil，并整理为组内 UI 通用组件第一版。
+2026-07-06 F 修正 LoadingDialogUtil.cancelLoading()，关闭加载框后释放静态引用，避免后续网络请求无法再次显示加载框。
+2026-07-06 F 增强 DialogUtil 的默认按钮行为，未传监听器时按钮也能正常关闭弹窗。
+2026-07-06 F 编写 F_UI组件调用说明.md，整理提示框、确认框、加载框、错误日志的组内调用方式。
+2026-07-06 F 完成本地 Android 客户端 assembleDebug 构建验证，确认通用组件修改后项目可编译。

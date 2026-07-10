@@ -216,6 +216,13 @@ public class DialogUtil {
         btnIKnow.setText(btnString);
         if (listener != null) {
             btnIKnow.setOnClickListener(listener);
+        } else {
+            btnIKnow.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    dismissDialog();
+                }
+            });
         }
 
         hintView.findViewById(R.id.tv_title).setVisibility(
@@ -328,10 +335,20 @@ public class DialogUtil {
         tvContent.setText(content);
         Button btnCancel = (Button) decideView.findViewById(R.id.btn_cancel);
         btnCancel.setText(cancelStr);
-        btnCancel.setOnClickListener(cancelListener);
+        btnCancel.setOnClickListener(cancelListener != null ? cancelListener : new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dismissDialog();
+            }
+        });
         Button btnConfirm = (Button) decideView.findViewById(R.id.btn_confirm);
         btnConfirm.setText(confirmStr);
-        btnConfirm.setOnClickListener(confirmListener);
+        btnConfirm.setOnClickListener(confirmListener != null ? confirmListener : new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                dismissDialog();
+            }
+        });
         decideView.findViewById(R.id.tv_title)
                 .setVisibility(showTitle ? View.VISIBLE : View.GONE);
         return decideView;
