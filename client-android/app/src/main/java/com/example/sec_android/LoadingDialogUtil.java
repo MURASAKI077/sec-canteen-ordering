@@ -3,7 +3,6 @@ package com.example.sec_android;
 import android.app.Dialog;
 import android.content.Context;
 import android.graphics.drawable.AnimationDrawable;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
@@ -34,6 +33,8 @@ public class LoadingDialogUtil {
                 && loadDialog.isShowing()) {
             loadDialog.dismiss();
         }
+        loadDialog = null;
+        loadingView = null;
     }
 
     /**
