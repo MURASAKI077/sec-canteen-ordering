@@ -71,39 +71,36 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.iv_registeractivity_back: //返回登录页面
-                Intent intent1 = new Intent(this, LoginActivity.class);
-                startActivity(intent1);
-                finish();
-                break;
-            case R.id.iv_registeractivity_showCode:    //改变随机验证码的生成
-                mIvRegisteractivityShowcode.setImageBitmap(Code.getInstance().createBitmap());
-                realCode = Code.getInstance().getCode().toLowerCase();
-                break;
-            case R.id.bt_registeractivity_register:    //注册按钮
-                Log.d("RegisterActivity","注册按钮被点击");
-                //获取用户输入的用户名、密码、验证码
-                account = mEtRegisteractivityAccount.getText().toString().trim();
-                password = mEtRegisteractivityPassword2.getText().toString().trim();
-                String phoneCode = mEtRegisteractivityPhonecodes.getText().toString().toLowerCase();
-                //注册验证
-                if (!TextUtils.isEmpty(account) && !TextUtils.isEmpty(password) && !TextUtils.isEmpty(phoneCode) ) {
-                    if(!mEtRegisteractivityPassword1.getText().toString().equals(mEtRegisteractivityPassword2.getText().toString())){
-                        Toast.makeText(this, "两次密码不同,注册失败", Toast.LENGTH_SHORT).show();
-                    }
-                    else if (phoneCode.equals(realCode)) {
-                        //将用户名和密码加入到数据库中
-                        //****************
-                        String registerUrlStr = Constant.URL_Register + "?account=" + account + "&password=" + password;
-                        new MyAsyncTask().execute(registerUrlStr);
-                    } else {
-                        Toast.makeText(this, "验证码错误,注册失败", Toast.LENGTH_SHORT).show();
-                    }
-                }else {
-                    Toast.makeText(this, "未完善信息，注册失败", Toast.LENGTH_SHORT).show();
+        int id = view.getId();
+        if (id == R.id.iv_registeractivity_back) {   //返回登录页面
+            Intent intent1 = new Intent(this, LoginActivity.class);
+            startActivity(intent1);
+            finish();
+        } else if (id == R.id.iv_registeractivity_showCode) {   //改变随机验证码的生成
+            mIvRegisteractivityShowcode.setImageBitmap(Code.getInstance().createBitmap());
+            realCode = Code.getInstance().getCode().toLowerCase();
+        } else if (id == R.id.bt_registeractivity_register) {   //注册按钮
+            Log.d("RegisterActivity","注册按钮被点击");
+            //获取用户输入的用户名、密码、验证码
+            account = mEtRegisteractivityAccount.getText().toString().trim();
+            password = mEtRegisteractivityPassword2.getText().toString().trim();
+            String phoneCode = mEtRegisteractivityPhonecodes.getText().toString().toLowerCase();
+            //注册验证
+            if (!TextUtils.isEmpty(account) && !TextUtils.isEmpty(password) && !TextUtils.isEmpty(phoneCode) ) {
+                if(!mEtRegisteractivityPassword1.getText().toString().equals(mEtRegisteractivityPassword2.getText().toString())){
+                    Toast.makeText(this, "两次密码不同,注册失败", Toast.LENGTH_SHORT).show();
                 }
-                break;
+                else if (phoneCode.equals(realCode)) {
+                    //将用户名和密码加入到数据库中
+                    //****************
+                    String registerUrlStr = Constant.URL_Register + "?account=" + account + "&password=" + password;
+                    new MyAsyncTask().execute(registerUrlStr);
+                } else {
+                    Toast.makeText(this, "验证码错误,注册失败", Toast.LENGTH_SHORT).show();
+                }
+            }else {
+                Toast.makeText(this, "未完善信息，注册失败", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 

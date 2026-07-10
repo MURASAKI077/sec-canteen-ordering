@@ -86,16 +86,29 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
 
     @Override
     public void onClick(View view) {
-        switch (view.getId()) {
-            case R.id.iv_loginactivity_back:
-                finish();
-                break;
+        int id = view.getId();
+        if (id == R.id.iv_loginactivity_back) {
+            finish();
+        } else if (id == R.id.tv_loginactivity_register) {
+            startActivity(new Intent(this, RegisterActivity.class));
+            finish();
+        } else if (id == R.id.bt_loginactivity_login) {
+            mEtLoginactivityAccount.setFocusable(true);
+            mEtLoginactivityAccount.setFocusableInTouchMode(true);
+            mEtLoginactivityAccount.requestFocus();
+            account = mEtLoginactivityAccount.getText().toString().trim();
+            password = mEtLoginactivityPassword.getText().toString().trim();
+            if (!TextUtils.isEmpty(account) && !TextUtils.isEmpty(password)) {
 
-            // 跳转到注册界面
-            case R.id.tv_loginactivity_register:
-                startActivity(new Intent(this, RegisterActivity.class));
-                finish();
-                break;
+                Log.d(TAG,"用户名和密码不为空，尝试登陆");
+                String loginUrlStr = Constant.URL_Login + "?account=" + account + "&password=" + password;
+                new MyAsyncTask().execute(loginUrlStr);
+            }
+
+            else {
+                Toast.makeText(this, "请输入你的用户名或密码", Toast.LENGTH_SHORT).show();
+            }
+        }
             /**
              * 登录验证：
              *
@@ -115,24 +128,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
              *  startActivity(intent);
              *  finish();//销毁此Activity
              */
-            case R.id.bt_loginactivity_login:
-                mEtLoginactivityAccount.setFocusable(true);
-                mEtLoginactivityAccount.setFocusableInTouchMode(true);
-                mEtLoginactivityAccount.requestFocus();
-                account = mEtLoginactivityAccount.getText().toString().trim();
-                password = mEtLoginactivityPassword.getText().toString().trim();
-                if (!TextUtils.isEmpty(account) && !TextUtils.isEmpty(password)) {
-
-                    Log.d(TAG,"用户名和密码不为空，尝试登陆");
-                    String loginUrlStr = Constant.URL_Login + "?account=" + account + "&password=" + password;
-                    new MyAsyncTask().execute(loginUrlStr);
-                }
-
-                else {
-                    Toast.makeText(this, "请输入你的用户名或密码", Toast.LENGTH_SHORT).show();
-                }
-                break;
-        }
 
     }
 
