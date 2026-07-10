@@ -28,9 +28,6 @@ import androidx.fragment.app.FragmentActivity;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import static com.example.sec_android.DialogUtil.showDecideDialogNoTitle;
-import static com.example.sec_android.DialogUtil.showDecideDialogWithTitle;
-
 public class ViewPagerFragment extends Fragment {
 
     private Button BTsearch;
@@ -74,7 +71,7 @@ public class ViewPagerFragment extends Fragment {
         //PersonalAccount.setText(Constant.account);
 
         View view=null;
-        if(mMessage=="菜单首页"){
+        if("菜单首页".equals(mMessage)){
             //Toast.makeText(getActivity(),"显示文字="+mMessage,Toast.LENGTH_LONG).show();
             view = inflater.inflate(R.layout.fragment_home, container, false);
             BTsearch = view.findViewById(R.id.BTsearch);
@@ -93,7 +90,7 @@ public class ViewPagerFragment extends Fragment {
 
 
         }
-        else if(mMessage=="个人中心"){
+        else if("个人中心".equals(mMessage)){
             //Toast.makeText(getActivity(),"显示文字="+mMessage,Toast.LENGTH_LONG).show();
             view = inflater.inflate(R.layout.fragment_personal, container, false);
             PersonalAccount = view.findViewById(R.id.tv_personal_account);
@@ -158,7 +155,7 @@ public class ViewPagerFragment extends Fragment {
                                 public void onClick(View v) {
                                     dialog.dismissDialog();
                                     if(Constant.landing){
-                                        order(room,window,name,price);
+                                        submitOrder(room, window, name, price);
                                     }
                                     else{
                                         DialogUtil.showHintDialog(FAct, "请先登录", false);
@@ -237,7 +234,7 @@ public class ViewPagerFragment extends Fragment {
                                 public void onClick(View v) {
                                     dialog.dismissDialog();
                                     if(Constant.landing){
-                                        order(room,window,name,price);
+                                        submitOrder(room, window, name, price);
                                     }
                                     else{
                                         DialogUtil.showHintDialog(FAct, "请先登录", false);
@@ -428,34 +425,14 @@ public class ViewPagerFragment extends Fragment {
         }
     }
 
-    private void order(String room,String window,String name, String price){
-
-        final CommonRequest request = new CommonRequest();
-        request.addRequestParam("room", room);
-        request.addRequestParam("window", window);
-        request.addRequestParam("name", name);
-        request.addRequestParam("price", price);
-        request.addRequestParam("account",Constant.account);
-
-        sendHttpPostRequest(Constant.URL_Order, request, new ResponseHandler() {
+    private void submitOrder(String room, String window, String name, String price){
+        OrderHelper.order(FAct, mHandler, room, window, name, price, Constant.account, new Runnable() {
             @Override
-            public void success(CommonResponse response) {
-                LoadingDialogUtil.cancelLoading();
-                Log.d("order", "接收response成功！");
-
+            public void run() {
+                if (FAct != null) {
+                    FAct.recreate();
+                }
             }
-
-            @Override
-            public void fail(String failCode, String failMsg) {
-                LoadingDialogUtil.cancelLoading();
-                Log.d("order", "接收response失败，请重试");
-            }
-        }, true);
-        FAct.recreate();
+        });
     }
-
-
-
-
-
 }
