@@ -29,6 +29,11 @@ public class LoginServlet extends HttpServlet {
             String account = params.getOrDefault("account", "").trim();
             String password = params.getOrDefault("password", "").trim();
 
+            if (account.isEmpty() || password.isEmpty()) {
+                ResponseUtil.writeText(response, "登录失败: 账号或密码为空");
+                return;
+            }
+
             try (Connection connection = DatabaseUtil.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
                          "SELECT userId FROM account WHERE userAccount = ? AND userPassword = ?")) {

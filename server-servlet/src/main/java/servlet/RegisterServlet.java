@@ -30,7 +30,7 @@ public class RegisterServlet extends HttpServlet {
             String password = params.getOrDefault("password", "").trim();
 
             if (account.isEmpty() || password.isEmpty()) {
-                ResponseUtil.writeText(response, "注册失败");
+                ResponseUtil.writeText(response, "注册失败：账号或密码为空");
                 return;
             }
 
