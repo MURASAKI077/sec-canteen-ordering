@@ -2,25 +2,33 @@ package com.example.sec_android;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-/**
- * M5 个人中心：显示当前账号、退出登录并承载历史订单列表。
- */
+import java.util.ArrayList;
+import java.util.HashMap;
+
 public class PersonalFragment extends Fragment {
+
+    private static final String TAG = "PersonalFragment";
 
     private TextView accountTextView;
     private ListView orderListView;
-    private boolean redirectingToLogin;
+    private ProductAdapter orderAdapter;
 
     @Nullable
     @Override
@@ -33,42 +41,39 @@ public class PersonalFragment extends Fragment {
         TextView exitTextView = view.findViewById(R.id.tv_personal_exit);
         TextView emptyOrderTextView = view.findViewById(R.id.tv_order_empty);
         orderListView = view.findViewById(R.id.List_myOrder);
-        orderListView.setEmptyView(emptyOrderTextView);
 
+        orderListView.setEmptyView(emptyOrderTextView);
+        orderListView.setOnItemClickListener(this::onOrderItemClick);
         exitTextView.setOnClickListener(v -> showLogoutConfirmation());
 
-        if (!isLoggedIn()) {
-            view.post(this::redirectToLogin);
-            return view;
-        }
-
-        refreshAccount();
-        loadOrderHistory();
+        refreshContent();
         return view;
     }
 
     @Override
     public void onResume() {
         super.onResume();
-        if (accountTextView == null) {
-            return;
-        }
-
-        if (!isLoggedIn()) {
-            redirectToLogin();
-            return;
-        }
-
-        redirectingToLogin = false;
-        refreshAccount();
+        refreshContent();
     }
 
     private boolean isLoggedIn() {
         return Constant.landing && !TextUtils.isEmpty(Constant.account);
     }
 
-    private void refreshAccount() {
+    private void refreshContent() {
+        if (accountTextView == null || orderListView == null || !isAdded()) {
+            return;
+        }
+
+        if (!isLoggedIn()) {
+            accountTextView.setText("");
+            orderAdapter = new ProductAdapter(requireActivity(), new ArrayList<HashMap<String, String>>());
+            orderListView.setAdapter(orderAdapter);
+            return;
+        }
+
         accountTextView.setText(Constant.account);
+        loadOrderHistory();
     }
 
     private void showLogoutConfirmation() {
@@ -94,15 +99,7 @@ public class PersonalFragment extends Fragment {
     private void logout() {
         Constant.landing = false;
         Constant.account = "";
-        redirectToLogin();
-    }
 
-    private void redirectToLogin() {
-        if (!isAdded() || redirectingToLogin) {
-            return;
-        }
-
-        redirectingToLogin = true;
         Intent intent = new Intent(requireContext(), LoginActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
@@ -110,10 +107,95 @@ public class PersonalFragment extends Fragment {
     }
 
     private void loadOrderHistory() {
-        /*
-         * D 的并行开发分支尚未提供 OrderHistoryHelper。
-         * Helper 合入后在这里接入：
-         * OrderHistoryHelper.getOrderData(Constant.account, orderListView);
-         */
+        CommonRequest request = new CommonRequest();
+        request.addRequestParam("account", Constant.account);
+        sendHttpPostRequest(Constant.URL_OrderRecord, request, new ResponseHandler() {
+            @Override
+            public void success(CommonResponse response) {
+                if (!isAdded()) {
+                    return;
+                }
+
+                LoadingDialogUtil.cancelLoading();
+                orderAdapter = new ProductAdapter(requireActivity(), response.getDataList());
+                orderListView.setAdapter(orderAdapter);
+            }
+
+            @Override
+            public void fail(String failCode, String failMsg) {
+                if (!isAdded()) {
+                    return;
+                }
+
+                LoadingDialogUtil.cancelLoading();
+                Log.e(TAG, "load order history failed: " + failCode + " " + failMsg);
+                Toast.makeText(requireContext(), "\u83b7\u53d6\u8ba2\u5355\u8bb0\u5f55\u5931\u8d25", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
+
+    private void onOrderItemClick(AdapterView<?> parent, View itemView, int position, long id) {
+        if (!isAdded() || !isLoggedIn()) {
+            return;
+        }
+
+        String room = getText(itemView, R.id.tv_room);
+        String window = getText(itemView, R.id.tv_window);
+        String name = getText(itemView, R.id.tv_name);
+        String price = getText(itemView, R.id.tv_price);
+
+        View.OnClickListener cancelListener = v -> DialogUtil.dismissDialog();
+        View.OnClickListener confirmListener = v -> {
+            DialogUtil.dismissDialog();
+            OrderHelper.order(
+                    requireActivity(),
+                    mHandler,
+                    room,
+                    window,
+                    name,
+                    price,
+                    Constant.account,
+                    this::loadOrderHistory
+            );
+        };
+
+        DialogUtil.showDecideDialogWithTitle(
+                requireContext(),
+                "\u662f\u5426\u786e\u8ba4\u4e0b\u5355",
+                name + "\uff0c" + price + "\u5143",
+                cancelListener,
+                confirmListener
+        );
+    }
+
+    private String getText(View itemView, int viewId) {
+        TextView textView = itemView.findViewById(viewId);
+        return textView == null ? "" : textView.getText().toString();
+    }
+
+    private void sendHttpPostRequest(String url,
+                                     CommonRequest request,
+                                     ResponseHandler responseHandler) {
+        new HttpPostTask(request, mHandler, responseHandler).execute(url);
+    }
+
+    private final Handler mHandler = new Handler(Looper.getMainLooper()) {
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            super.handleMessage(msg);
+
+            if (!isAdded()) {
+                return;
+            }
+
+            String errorMsg = msg.obj == null ? "" : msg.obj.toString();
+            if (msg.what == Constant.HANDLER_HTTP_SEND_FAIL) {
+                LogUtil.logErr(errorMsg);
+                Toast.makeText(requireContext(), "\u8bf7\u6c42\u53d1\u9001\u5931\u8d25\uff0c\u8bf7\u91cd\u8bd5", Toast.LENGTH_SHORT).show();
+            } else if (msg.what == Constant.HANDLER_HTTP_RECEIVE_FAIL) {
+                LogUtil.logErr(errorMsg);
+                Toast.makeText(requireContext(), "\u83b7\u53d6\u8ba2\u5355\u8bb0\u5f55\u5931\u8d25", Toast.LENGTH_SHORT).show();
+            }
+        }
+    };
 }

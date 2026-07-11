@@ -46,7 +46,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-        MainActivity.viewPager.setCurrentItem(0);
 
         initView();
 
@@ -91,11 +90,7 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             finish();
         } else if (viewId == R.id.tv_loginactivity_register) {
             startActivity(new Intent(this, RegisterActivity.class));
-            finish();
         } else if (viewId == R.id.bt_loginactivity_login) {
-            mEtLoginactivityAccount.setFocusable(true);
-            mEtLoginactivityAccount.setFocusableInTouchMode(true);
-            mEtLoginactivityAccount.requestFocus();
             account = mEtLoginactivityAccount.getText().toString().trim();
             password = mEtLoginactivityPassword.getText().toString().trim();
             if (!TextUtils.isEmpty(account) && !TextUtils.isEmpty(password)) {

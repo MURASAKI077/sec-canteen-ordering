@@ -7,6 +7,7 @@
     android:layout_height="match_parent"
     tools:context="com.example.sec_android.RegisterActivity"
     android:background="@drawable/bg4"
+    android:fitsSystemWindows="true"
     >
 
     <RelativeLayout
@@ -17,13 +18,14 @@
         >
         <ImageView
             android:id="@+id/iv_registeractivity_back"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:background="@drawable/ic_left_back"
+            android:layout_width="48dp"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_left_back"
+            android:padding="9dp"
+            android:scaleType="centerInside"
             android:layout_centerVertical="true"
-            android:layout_marginLeft="10dp"
             android:clickable="true"
-            android:onClick="onClick"
+            android:focusable="true"
             />
 
         <TextView
@@ -33,9 +35,9 @@
             android:text="注册"
             android:textColor="#fff"
             android:textSize="20dp"
-            android:layout_toRightOf="@+id/iv_registeractivity_back"
+            android:layout_toEndOf="@+id/iv_registeractivity_back"
             android:layout_centerVertical="true"
-            android:layout_marginLeft="20dp"
+            android:layout_marginStart="4dp"
             />
     </RelativeLayout>
 
@@ -139,7 +141,6 @@
                     android:layout_height="70dp"
                     android:layout_weight="1.5"
                     android:clickable="true"
-                    android:onClick="onClick"
                     android:layout_marginTop="-10dp"
                     />
             </LinearLayout>
@@ -153,7 +154,6 @@
             android:background="@drawable/selector_loginactivity_button"
             android:textColor="#fff"
             android:text="注册"
-            android:onClick="onClick"
             android:layout_marginTop="40dp"
             />
 

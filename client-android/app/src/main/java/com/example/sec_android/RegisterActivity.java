@@ -73,8 +73,6 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
     public void onClick(View view) {
         int viewId = view.getId();
         if (viewId == R.id.iv_registeractivity_back) {
-            Intent intent1 = new Intent(this, LoginActivity.class);
-            startActivity(intent1);
             finish();
         } else if (viewId == R.id.iv_registeractivity_showCode) {
             mIvRegisteractivityShowcode.setImageBitmap(Code.getInstance().createBitmap());

@@ -14,16 +14,13 @@
         android:theme="@style/Theme.Software_Engineering_Course">
         <activity
             android:name=".RegisterActivity"
-            android:exported="false"
-            android:launchMode="singleTask" />
+            android:exported="false" />
         <activity
             android:name=".LoginActivity"
-            android:exported="false"
-            android:launchMode="singleTask" />
+            android:exported="false" />
         <activity
             android:name=".MainActivity"
-            android:exported="true"
-            android:launchMode="singleTask">
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
