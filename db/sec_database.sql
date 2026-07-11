@@ -42,10 +42,16 @@ CREATE TABLE dishes (
 ) ENGINE=InnoDB AUTO_INCREMENT=33 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE orders (
+  orderId BIGINT NOT NULL AUTO_INCREMENT,
   userId INT NOT NULL,
   dishId INT NOT NULL,
+  quantity INT NOT NULL DEFAULT 1,
+  status VARCHAR(20) NOT NULL DEFAULT 'PLACED',
+  orderTime TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (orderId),
   INDEX idx_orders_userId (userId),
   INDEX idx_orders_dishId (dishId),
+  INDEX idx_orders_user_time (userId, orderTime, orderId),
   CONSTRAINT fk_orders_account
     FOREIGN KEY (userId) REFERENCES account (userId)
     ON DELETE CASCADE ON UPDATE CASCADE,

@@ -10,6 +10,7 @@ public class Constant {
     public static String URL_Dish = URL + "DishServlet";
     public static String URL_Order = URL + "OrderServlet";
     public static String URL_OrderRecord = URL + "OrderRecordServlet";
+    public static String URL_CancelOrder = URL + "CancelOrderServlet";
     public static boolean landing;
     public static String account;
 }

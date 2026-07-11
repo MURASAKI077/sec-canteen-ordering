@@ -39,6 +39,8 @@
             android:layout_weight="3"
             android:background="@drawable/edittext"
             android:hint="请输入查找的内容"
+            android:imeOptions="actionSearch"
+            android:inputType="text"
             android:maxLength="8"
             android:maxLines="1"
             android:paddingStart="10dp"

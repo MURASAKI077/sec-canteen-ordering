@@ -38,20 +38,25 @@ public class OrderRecordServlet extends HttpServlet {
 
             try (Connection connection = DatabaseUtil.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
-                         "SELECT d.dishName, d.dishWindow, d.dishRoom, d.price " +
+                         "SELECT o.orderId, o.quantity, o.status, o.orderTime, " +
+                                 "d.dishName, d.dishWindow, d.dishRoom, d.price " +
                                  "FROM orders o " +
                                  "JOIN account a ON o.userId = a.userId " +
                                  "JOIN dishes d ON o.dishId = d.dishId " +
                                  "WHERE a.userAccount = ? " +
-                                 "ORDER BY d.dishId")) {
+                                 "ORDER BY o.orderTime DESC, o.orderId DESC")) {
                 statement.setString(1, account);
                 try (ResultSet resultSet = statement.executeQuery()) {
                     while (resultSet.next()) {
                         HashMap<String, String> item = new HashMap<>();
+                        item.put("orderId", String.valueOf(resultSet.getLong("orderId")));
                         item.put("name", resultSet.getString("dishName"));
                         item.put("window", resultSet.getString("dishWindow"));
                         item.put("room", resultSet.getString("dishRoom"));
                         item.put("price", String.valueOf(resultSet.getFloat("price")));
+                        item.put("quantity", String.valueOf(resultSet.getInt("quantity")));
+                        item.put("status", resultSet.getString("status"));
+                        item.put("orderTime", resultSet.getTimestamp("orderTime").toString());
                         commonResponse.addListItem(item);
                     }
                 }
