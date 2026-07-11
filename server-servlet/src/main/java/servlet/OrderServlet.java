@@ -9,6 +9,8 @@ import java.io.IOException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.Statement;
+import java.sql.Timestamp;
 import java.util.Map;
 
 @WebServlet("/OrderServlet")
@@ -32,6 +34,7 @@ public class OrderServlet extends HttpServlet {
             String window = params.getOrDefault("window", "").trim();
             String room = params.getOrDefault("room", "").trim();
             String price = params.getOrDefault("price", "").trim();
+            int quantity = parseQuantity(params.getOrDefault("quantity", "1"));
 
             if (account.isEmpty()) {
                 commonResponse.setResult("1", "account is required");
@@ -56,14 +59,11 @@ public class OrderServlet extends HttpServlet {
                 if (dishId == null) {
                     commonResponse.setResult("1", "dish does not exist");
                 } else {
-                    createOrder(connection, userId, dishId);
-                    commonResponse.setResult("0", "success");
-                    commonResponse.addProperty("userId", String.valueOf(userId));
-                    commonResponse.addProperty("dishId", String.valueOf(dishId));
+                    createOrderInTransaction(connection, commonResponse, userId, dishId, quantity);
                 }
             }
         } catch (NumberFormatException e) {
-            commonResponse.setResult("1", "price format is invalid");
+            commonResponse.setResult("1", e.getMessage());
         } catch (Exception e) {
             commonResponse.setResult("1", e.getMessage());
         }
@@ -115,12 +115,75 @@ public class OrderServlet extends HttpServlet {
         }
     }
 
-    private void createOrder(Connection connection, int userId, int dishId) throws Exception {
+    private void createOrderInTransaction(Connection connection,
+                                          CommonResponse commonResponse,
+                                          int userId,
+                                          int dishId,
+                                          int quantity) throws Exception {
+        boolean originalAutoCommit = connection.getAutoCommit();
+        connection.setAutoCommit(false);
+        try {
+            long orderId = createOrder(connection, userId, dishId, quantity);
+            Timestamp orderTime = findOrderTime(connection, orderId);
+            connection.commit();
+
+            commonResponse.setResult("0", "success");
+            commonResponse.addProperty("orderId", String.valueOf(orderId));
+            commonResponse.addProperty("userId", String.valueOf(userId));
+            commonResponse.addProperty("dishId", String.valueOf(dishId));
+            commonResponse.addProperty("quantity", String.valueOf(quantity));
+            commonResponse.addProperty("status", "PLACED");
+            commonResponse.addProperty("orderTime", orderTime.toString());
+        } catch (Exception e) {
+            connection.rollback();
+            throw e;
+        } finally {
+            connection.setAutoCommit(originalAutoCommit);
+        }
+    }
+
+    private long createOrder(Connection connection, int userId, int dishId, int quantity) throws Exception {
         try (PreparedStatement statement = connection.prepareStatement(
-                "INSERT INTO orders (userId, dishId) VALUES (?, ?)")) {
+                "INSERT INTO orders (userId, dishId, quantity, status) VALUES (?, ?, ?, 'PLACED')",
+                Statement.RETURN_GENERATED_KEYS)) {
             statement.setInt(1, userId);
             statement.setInt(2, dishId);
+            statement.setInt(3, quantity);
             statement.executeUpdate();
+            try (ResultSet generatedKeys = statement.getGeneratedKeys()) {
+                if (!generatedKeys.next()) {
+                    throw new IllegalStateException("order ID was not generated");
+                }
+                return generatedKeys.getLong(1);
+            }
+        }
+    }
+
+    private Timestamp findOrderTime(Connection connection, long orderId) throws Exception {
+        try (PreparedStatement statement = connection.prepareStatement(
+                "SELECT orderTime FROM orders WHERE orderId = ?")) {
+            statement.setLong(1, orderId);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (!resultSet.next()) {
+                    throw new IllegalStateException("created order was not found");
+                }
+                return resultSet.getTimestamp("orderTime");
+            }
+        }
+    }
+
+    private int parseQuantity(String value) {
+        try {
+            int quantity = Integer.parseInt(value.trim());
+            if (quantity < 1 || quantity > 99) {
+                throw new NumberFormatException("quantity must be between 1 and 99");
+            }
+            return quantity;
+        } catch (NumberFormatException e) {
+            if (e.getMessage() != null && e.getMessage().startsWith("quantity")) {
+                throw e;
+            }
+            throw new NumberFormatException("quantity format is invalid");
         }
     }
 }

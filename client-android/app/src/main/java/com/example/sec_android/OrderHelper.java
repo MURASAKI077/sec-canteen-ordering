@@ -24,6 +24,7 @@ public final class OrderHelper {
         request.addRequestParam("name", name);
         request.addRequestParam("price", price);
         request.addRequestParam("account", account);
+        request.addRequestParam("quantity", "1");
 
         new HttpPostTask(request, handler, new ResponseHandler() {
             @Override

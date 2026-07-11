@@ -12,6 +12,10 @@
 **/.idea/
 *.iml
 .vscode/
+server-servlet/.classpath
+server-servlet/.project
+server-servlet/.settings/
+server-servlet/tools/*.class
 
 # 服务端
 server-servlet/target/
