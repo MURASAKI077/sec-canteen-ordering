@@ -28,7 +28,7 @@ public class PersonalFragment extends Fragment {
 
     private TextView accountTextView;
     private ListView orderListView;
-    private ProductAdapter orderAdapter;
+    private OrderAdapter orderAdapter;
 
     @Nullable
     @Override
@@ -67,7 +67,7 @@ public class PersonalFragment extends Fragment {
 
         if (!isLoggedIn()) {
             accountTextView.setText("");
-            orderAdapter = new ProductAdapter(requireActivity(), new ArrayList<HashMap<String, String>>());
+            orderAdapter = new OrderAdapter(requireActivity(), new ArrayList<HashMap<String, String>>());
             orderListView.setAdapter(orderAdapter);
             return;
         }
@@ -117,7 +117,7 @@ public class PersonalFragment extends Fragment {
                 }
 
                 LoadingDialogUtil.cancelLoading();
-                orderAdapter = new ProductAdapter(requireActivity(), response.getDataList());
+                orderAdapter = new OrderAdapter(requireActivity(), response.getDataList());
                 orderListView.setAdapter(orderAdapter);
             }
 
@@ -139,38 +139,53 @@ public class PersonalFragment extends Fragment {
             return;
         }
 
-        String room = getText(itemView, R.id.tv_room);
-        String window = getText(itemView, R.id.tv_window);
-        String name = getText(itemView, R.id.tv_name);
-        String price = getText(itemView, R.id.tv_price);
+        HashMap<String, String> order = (HashMap<String, String>) parent.getItemAtPosition(position);
+        String orderId = order.get("orderId");
+        String name = order.get("name");
+        if ("CANCELLED".equals(order.get("status"))) {
+            DialogUtil.showHintDialog(requireContext(), "\u8be5\u8ba2\u5355\u5df2\u53d6\u6d88", false);
+            return;
+        }
 
         View.OnClickListener cancelListener = v -> DialogUtil.dismissDialog();
         View.OnClickListener confirmListener = v -> {
             DialogUtil.dismissDialog();
-            OrderHelper.order(
-                    requireActivity(),
-                    mHandler,
-                    room,
-                    window,
-                    name,
-                    price,
-                    Constant.account,
-                    this::loadOrderHistory
-            );
+            cancelOrder(orderId);
         };
 
         DialogUtil.showDecideDialogWithTitle(
                 requireContext(),
-                "\u662f\u5426\u786e\u8ba4\u4e0b\u5355",
-                name + "\uff0c" + price + "\u5143",
+                "\u662f\u5426\u53d6\u6d88\u8ba2\u5355",
+                name == null ? "" : name,
                 cancelListener,
                 confirmListener
         );
     }
 
-    private String getText(View itemView, int viewId) {
-        TextView textView = itemView.findViewById(viewId);
-        return textView == null ? "" : textView.getText().toString();
+    private void cancelOrder(String orderId) {
+        CommonRequest request = new CommonRequest();
+        request.addRequestParam("account", Constant.account);
+        request.addRequestParam("orderId", orderId == null ? "" : orderId);
+        sendHttpPostRequest(Constant.URL_CancelOrder, request, new ResponseHandler() {
+            @Override
+            public void success(CommonResponse response) {
+                if (!isAdded()) {
+                    return;
+                }
+                Toast.makeText(requireContext(), "\u8ba2\u5355\u5df2\u53d6\u6d88", Toast.LENGTH_SHORT).show();
+                loadOrderHistory();
+            }
+
+            @Override
+            public void fail(String failCode, String failMsg) {
+                if (!isAdded()) {
+                    return;
+                }
+                DialogUtil.showHintDialog(requireContext(),
+                        TextUtils.isEmpty(failMsg) ? "\u53d6\u6d88\u8ba2\u5355\u5931\u8d25" : failMsg,
+                        false);
+            }
+        });
     }
 
     private void sendHttpPostRequest(String url,

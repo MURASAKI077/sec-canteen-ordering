@@ -19,6 +19,7 @@
     <string name="my_favorite">我的收藏</string>
     <string name="my_order">我的订单</string>
     <string name="order_history_empty">暂无历史订单</string>
+    <string name="order_sort_hint">&#x6309;&#x6700;&#x65B0;&#x4E0B;&#x5355;&#x65F6;&#x95F4;&#x6392;&#x5E8F;&#xFF0C;&#x70B9;&#x51FB;&#x53EF;&#x53D6;&#x6D88;</string>
     <string name="restaurant">餐厅</string>
     <string name="window">窗口</string>
     <string name="dish_name">菜品名称</string>
