@@ -15,11 +15,26 @@ import java.util.Map;
 @WebServlet("/OrderRecordServlet")
 public class OrderRecordServlet extends HttpServlet {
     @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        handle(request, response);
+    }
+
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        handle(request, response);
+    }
+
+    private void handle(HttpServletRequest request, HttpServletResponse response) throws IOException {
         CommonResponse commonResponse = new CommonResponse();
         try {
             Map<String, String> params = RequestUtil.readParams(request);
             String account = params.getOrDefault("account", "").trim();
+
+            if (account.isEmpty()) {
+                commonResponse.setResult("1", "account is required");
+                ResponseUtil.writeJson(response, commonResponse);
+                return;
+            }
 
             try (Connection connection = DatabaseUtil.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
