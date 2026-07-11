@@ -58,7 +58,10 @@ public class MainActivity extends AppCompatActivity {
                 if (!Constant.landing) {
                     startActivity(new Intent(MainActivity.this, LoginActivity.class));
                     viewPager.setCurrentItem(0, false);
+                    return;
                 }
+
+                refreshPersonalPage();
             }
 
             @Override
@@ -67,7 +70,17 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onTabReselected(TabLayout.Tab tab) {
+                if (tab.getPosition() == 1 && Constant.landing) {
+                    refreshPersonalPage();
+                }
             }
         });
+    }
+
+    private void refreshPersonalPage() {
+        Fragment fragment = fragments.get(1);
+        if (fragment instanceof PersonalFragment) {
+            ((PersonalFragment) fragment).refreshContent();
+        }
     }
 }

@@ -60,7 +60,7 @@ public class PersonalFragment extends Fragment {
         return Constant.landing && !TextUtils.isEmpty(Constant.account);
     }
 
-    private void refreshContent() {
+    public void refreshContent() {
         if (accountTextView == null || orderListView == null || !isAdded()) {
             return;
         }
