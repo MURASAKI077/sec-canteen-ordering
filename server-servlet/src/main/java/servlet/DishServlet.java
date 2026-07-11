@@ -13,34 +13,45 @@ import java.util.HashMap;
 
 @WebServlet("/DishServlet")
 public class DishServlet extends HttpServlet {
+
+    private static final String QUERY_DISHES_SQL =
+            "SELECT dishName, dishWindow, dishRoom, price FROM dishes ORDER BY dishId";
+
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        handle(response);
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        handleDishList(response);
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        handle(response);
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        handleDishList(response);
     }
 
-    private void handle(HttpServletResponse response) throws IOException {
+    // 查询全部菜品，并封装成客户端首页列表需要的字段
+    private void handleDishList(HttpServletResponse response) throws IOException {
         CommonResponse commonResponse = new CommonResponse();
+
         try (Connection connection = DatabaseUtil.getConnection();
-             PreparedStatement statement = connection.prepareStatement(
-                     "SELECT dishName, dishWindow, dishRoom, price FROM dishes ORDER BY dishId");
+             PreparedStatement statement = connection.prepareStatement(QUERY_DISHES_SQL);
              ResultSet resultSet = statement.executeQuery()) {
+
             while (resultSet.next()) {
                 HashMap<String, String> item = new HashMap<>();
                 item.put("name", resultSet.getString("dishName"));
                 item.put("window", resultSet.getString("dishWindow"));
                 item.put("room", resultSet.getString("dishRoom"));
                 item.put("price", String.valueOf(resultSet.getFloat("price")));
+
                 commonResponse.addListItem(item);
             }
+
             commonResponse.setResult("0", "success");
         } catch (Exception e) {
-            commonResponse.setResult("1", e.getMessage());
+            commonResponse.setResult("1", "获取菜单失败");
         }
+
         ResponseUtil.writeJson(response, commonResponse);
     }
 }
