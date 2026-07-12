@@ -1,13 +1,13 @@
 package com.example.sec_android;
 
-
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.os.AsyncTask;
-import android.preference.PreferenceManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
+import android.preference.PreferenceManager;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -16,72 +16,48 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-
-
-public class LoginActivity extends AppCompatActivity implements View.OnClickListener{
-    private static final String TAG = "LoginActivity";
-
-
-    private SharedPreferences pref;
-    private ImageView mIvLoginactivityBack;
-    private TextView mTvLoginactivityRegister;
-    private EditText mEtLoginactivityAccount;
-    private EditText mEtLoginactivityPassword;
-    private Button mBtLoginactivityLogin;
-
-    private CheckBox rememberPass;
-    private String account;
-    private String password;
+public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
+    private SharedPreferences preferences;
+    private ImageView backButton;
+    private TextView registerButton;
+    private EditText accountInput;
+    private EditText passwordInput;
+    private Button loginButton;
+    private CheckBox rememberAccount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
-
         initView();
 
-
-        pref = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean isRemember = pref.getBoolean("remember_password", false);
-
-
-        if (isRemember) {
-            // 将账号和密码都设置到文本框中
-            String account = pref.getString("account", "");
-            String password = pref.getString("password", "");
-            mEtLoginactivityAccount.setText(account);
-            mEtLoginactivityPassword.setText(password);
-            rememberPass.setChecked(true);
+        preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        boolean shouldRemember = preferences.getBoolean("remember_account", false);
+        if (shouldRemember) {
+            accountInput.setText(preferences.getString("account", ""));
+            rememberAccount.setChecked(true);
         }
-
-
+        preferences.edit()
+                .remove("password")
+                .remove("remember_password")
+                .apply();
     }
 
     private void initView() {
-        // 初始化控件
-        mIvLoginactivityBack=findViewById(R.id.iv_loginactivity_back);
-        mBtLoginactivityLogin = findViewById(R.id.bt_loginactivity_login);
-        mTvLoginactivityRegister = findViewById(R.id.tv_loginactivity_register);
-        mEtLoginactivityAccount = findViewById(R.id.et_loginactivity_account);
-        mEtLoginactivityPassword = findViewById(R.id.et_loginactivity_password);
+        backButton = findViewById(R.id.iv_loginactivity_back);
+        loginButton = findViewById(R.id.bt_loginactivity_login);
+        registerButton = findViewById(R.id.tv_loginactivity_register);
+        accountInput = findViewById(R.id.et_loginactivity_account);
+        passwordInput = findViewById(R.id.et_loginactivity_password);
+        rememberAccount = findViewById(R.id.remember_pass);
 
-        // 设置点击事件监听器
-        mIvLoginactivityBack.setOnClickListener(this);
-        mBtLoginactivityLogin.setOnClickListener(this);
-        mTvLoginactivityRegister.setOnClickListener(this);
-
-        rememberPass = (CheckBox) findViewById(R.id.remember_pass);
+        backButton.setOnClickListener(this);
+        loginButton.setOnClickListener(this);
+        registerButton.setOnClickListener(this);
     }
-
 
     @Override
     public void onClick(View view) {
@@ -91,82 +67,65 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         } else if (viewId == R.id.tv_loginactivity_register) {
             startActivity(new Intent(this, RegisterActivity.class));
         } else if (viewId == R.id.bt_loginactivity_login) {
-            account = mEtLoginactivityAccount.getText().toString().trim();
-            password = mEtLoginactivityPassword.getText().toString().trim();
-            if (!TextUtils.isEmpty(account) && !TextUtils.isEmpty(password)) {
-                Log.d(TAG,"用户名和密码不为空，尝试登陆");
-                String loginUrlStr = Constant.URL_Login + "?account=" + account + "&password=" + password;
-                new MyAsyncTask().execute(loginUrlStr);
-            } else {
-                Toast.makeText(this, "请输入你的用户名或密码", Toast.LENGTH_SHORT).show();
+            login();
+        }
+    }
+
+    private void login() {
+        String account = accountInput.getText().toString().trim();
+        String password = passwordInput.getText().toString();
+        if (TextUtils.isEmpty(account) || TextUtils.isEmpty(password)) {
+            Toast.makeText(this, "\u8bf7\u8f93\u5165\u8d26\u53f7\u548c\u5bc6\u7801", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        LoadingDialogUtil.showLoadingDialog(this);
+        CommonRequest request = new CommonRequest();
+        request.addRequestParam("account", account);
+        request.addRequestParam("password", password);
+        new HttpPostTask(request, handler, new ResponseHandler() {
+            @Override
+            public void success(CommonResponse response) {
+                LoadingDialogUtil.cancelLoading();
+                saveRememberedAccount(account);
+                Constant.landing = true;
+                Constant.account = account;
+                Toast.makeText(LoginActivity.this, response.getResMsg(), Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                finish();
             }
-        }
-    }
 
-    public  class MyAsyncTask extends AsyncTask<String, Integer, String> {
-        @Override
-        protected void onPreExecute() {
-            Log.w("LoginActivity", "task onPreExecute()");
-        }
-
-        /**
-         * @param params 这里的params是一个数组，即AsyncTask在激活运行是调用execute()方法传入的参数
-         */
-        @Override
-        protected String doInBackground(String... params) {
-            Log.w("LoginActivity", "task doInBackground()");
-            HttpURLConnection connection = null;
-            StringBuilder response = new StringBuilder();
-            try {
-                Log.d("登录发送URL",params[0]);
-                URL url = new URL(params[0]); // 声明一个URL,注意如果用百度首页实验，请使用https开头，否则获取不到返回报文
-                connection = (HttpURLConnection) url.openConnection(); // 打开该URL连接
-                connection.setRequestMethod("GET"); // 设置请求方法，“POST或GET”，我们这里用GET，在说到POST的时候再用POST
-                connection.setConnectTimeout(80000); // 设置连接建立的超时时间
-                connection.setReadTimeout(80000); // 设置网络报文收发超时时间
-                InputStream in = connection.getInputStream();  // 通过连接的输入流获取下发报文，然后就是Java的流处理
-                BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    response.append(line);
-                }
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
+            @Override
+            public void fail(String failCode, String failMsg) {
+                LoadingDialogUtil.cancelLoading();
+                Toast.makeText(LoginActivity.this,
+                        TextUtils.isEmpty(failMsg) ? "\u767b\u5f55\u5931\u8d25" : failMsg,
+                        Toast.LENGTH_SHORT).show();
             }
-            return response.toString(); // 这里返回的结果就作为onPostExecute方法的入参
-        }
-
-        @Override
-        protected void onProgressUpdate(Integer... values) {
-            Log.w("LoginActivity", "task onProgressUpdate()");
-            // 如果在doInBackground方法，那么就会立刻执行本方法
-            // 本方法在UI线程中执行，可以更新UI元素，典型的就是更新进度条进度，一般是在下载时候使用
-        }
-
-        /**
-         * 运行在UI线程中，所以可以直接操作UI元素
-         * @param s
-         */
-        @Override
-        protected void onPostExecute(String s) {
-            Log.w("LoginActivity", "task onPostExecute()");
-            Toast.makeText(LoginActivity.this, s, Toast.LENGTH_SHORT).show();
-            Log.w("LoginActivity", s);
-            myReMethod(s);
-        }
+        }).execute(Constant.URL_Login);
     }
 
-    private void myReMethod(String reValue) {
-        if(reValue.contains("成功")){
-            Constant.landing = true;
-            Log.d("LoginActivity","landing="+Constant.landing);
-            Constant.account=account;
-            Log.d("LoginActivity","account="+Constant.account);
-            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-            startActivity(intent);
-            finish();
+    private void saveRememberedAccount(String account) {
+        boolean remember = rememberAccount.isChecked();
+        SharedPreferences.Editor editor = preferences.edit()
+                .putBoolean("remember_account", remember)
+                .remove("password")
+                .remove("remember_password");
+        if (remember) {
+            editor.putString("account", account);
+        } else {
+            editor.remove("account");
         }
+        editor.apply();
     }
+
+    private final Handler handler = new Handler(Looper.getMainLooper()) {
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            LoadingDialogUtil.cancelLoading();
+            Toast.makeText(LoginActivity.this,
+                    "\u7f51\u7edc\u8bf7\u6c42\u5931\u8d25\uff0c\u8bf7\u68c0\u67e5\u670d\u52a1\u5668",
+                    Toast.LENGTH_SHORT).show();
+        }
+    };
 }
