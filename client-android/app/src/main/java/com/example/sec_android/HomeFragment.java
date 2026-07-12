@@ -4,9 +4,8 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.util.Log;
+import android.view.inputmethod.EditorInfo;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,34 +44,31 @@ public class HomeFragment extends Fragment {
         searchInput = view.findViewById(R.id.ETsearch);
         dishListView = view.findViewById(R.id.home_list);
 
-        searchInput.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+        searchButton.setOnClickListener(v -> searchDishes());
+        searchInput.setOnEditorActionListener((textView, actionId, event) -> {
+            if (actionId == EditorInfo.IME_ACTION_SEARCH
+                    || (event != null && event.getKeyCode() == android.view.KeyEvent.KEYCODE_ENTER)) {
+                searchDishes();
+                return true;
             }
-
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (dishAdapter != null) {
-                    dishAdapter.getFilter().filter(s);
-                }
-            }
-
-            @Override
-            public void afterTextChanged(Editable s) {
-            }
-        });
-
-        searchButton.setOnClickListener(v -> {
-            if (dishAdapter != null) {
-                dishAdapter.getFilter().filter(searchInput.getText().toString());
-            }
+            return false;
         });
 
         dishListView.setOnItemClickListener((parent, itemView, position, id) -> showOrderConfirmation(itemView));
     }
 
     private void loadDishList() {
+        loadDishList("");
+    }
+
+    private void searchDishes() {
+        loadDishList(searchInput.getText().toString().trim());
+    }
+
+    private void loadDishList(String keyword) {
+        LoadingDialogUtil.showLoadingDialog(requireContext());
         CommonRequest request = new CommonRequest();
+        request.addRequestParam("keyword", keyword);
         sendHttpPostRequest(Constant.URL_Dish, request, new ResponseHandler() {
             @Override
             public void success(CommonResponse response) {

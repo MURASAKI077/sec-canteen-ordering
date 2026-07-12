@@ -1,72 +1,50 @@
 package com.example.sec_android;
 
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
+import android.os.Message;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Toast;
+
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-
-
-public class RegisterActivity extends AppCompatActivity implements View.OnClickListener{
-
-    public static final int UPDATE_TEXT1= 1;
-    public static final int UPDATE_TEXT2= 2;
-
-
+public class RegisterActivity extends AppCompatActivity implements View.OnClickListener {
     private String realCode;
-    private Button mBtRegisteractivityRegister;
-    private ImageView mIvRegisteractivityBack;
-    private EditText mEtRegisteractivityAccount;
-    private EditText mEtRegisteractivityPassword1;
-    private EditText mEtRegisteractivityPassword2;
-    private EditText mEtRegisteractivityPhonecodes;
-    private ImageView mIvRegisteractivityShowcode;
-
-    private String account;
-    private String password;
+    private Button registerButton;
+    private ImageView backButton;
+    private EditText accountInput;
+    private EditText passwordInput;
+    private EditText confirmPasswordInput;
+    private EditText captchaInput;
+    private ImageView captchaImage;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_register);
-
         initView();
-
-        //将验证码用图片的形式显示出来
-        mIvRegisteractivityShowcode.setImageBitmap(Code.getInstance().createBitmap());
-        realCode = Code.getInstance().getCode().toLowerCase();
+        refreshCaptcha();
     }
 
-    private void initView(){
-        mBtRegisteractivityRegister = findViewById(R.id.bt_registeractivity_register);
-        mIvRegisteractivityBack = findViewById(R.id.iv_registeractivity_back);
-        mEtRegisteractivityAccount = findViewById(R.id.et_registeractivity_account);
-        mEtRegisteractivityPassword1 = findViewById(R.id.et_registeractivity_password1);
-        mEtRegisteractivityPassword2 = findViewById(R.id.et_registeractivity_password2);
-        mEtRegisteractivityPhonecodes = findViewById(R.id.et_registeractivity_phoneCodes);
-        mIvRegisteractivityShowcode = findViewById(R.id.iv_registeractivity_showCode);
+    private void initView() {
+        registerButton = findViewById(R.id.bt_registeractivity_register);
+        backButton = findViewById(R.id.iv_registeractivity_back);
+        accountInput = findViewById(R.id.et_registeractivity_account);
+        passwordInput = findViewById(R.id.et_registeractivity_password1);
+        confirmPasswordInput = findViewById(R.id.et_registeractivity_password2);
+        captchaInput = findViewById(R.id.et_registeractivity_phoneCodes);
+        captchaImage = findViewById(R.id.iv_registeractivity_showCode);
 
-        /**
-         * 注册页面能点击的就三个地方
-         * top处返回箭头、刷新验证码图片、注册按钮
-         */
-        mIvRegisteractivityBack.setOnClickListener(this);
-        mIvRegisteractivityShowcode.setOnClickListener(this);
-        mBtRegisteractivityRegister.setOnClickListener(this);
+        backButton.setOnClickListener(this);
+        captchaImage.setOnClickListener(this);
+        registerButton.setOnClickListener(this);
     }
 
     @Override
@@ -75,94 +53,70 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         if (viewId == R.id.iv_registeractivity_back) {
             finish();
         } else if (viewId == R.id.iv_registeractivity_showCode) {
-            mIvRegisteractivityShowcode.setImageBitmap(Code.getInstance().createBitmap());
-            realCode = Code.getInstance().getCode().toLowerCase();
+            refreshCaptcha();
         } else if (viewId == R.id.bt_registeractivity_register) {
-            Log.d("RegisterActivity","注册按钮被点击");
-            account = mEtRegisteractivityAccount.getText().toString().trim();
-            password = mEtRegisteractivityPassword2.getText().toString().trim();
-            String phoneCode = mEtRegisteractivityPhonecodes.getText().toString().toLowerCase();
-            if (!TextUtils.isEmpty(account) && !TextUtils.isEmpty(password) && !TextUtils.isEmpty(phoneCode) ) {
-                if(!mEtRegisteractivityPassword1.getText().toString().equals(mEtRegisteractivityPassword2.getText().toString())){
-                    Toast.makeText(this, "两次密码不同,注册失败", Toast.LENGTH_SHORT).show();
-                }
-                else if (phoneCode.equals(realCode)) {
-                    String registerUrlStr = Constant.URL_Register + "?account=" + account + "&password=" + password;
-                    new MyAsyncTask().execute(registerUrlStr);
-                } else {
-                    Toast.makeText(this, "验证码错误,注册失败", Toast.LENGTH_SHORT).show();
-                }
-            }else {
-                Toast.makeText(this, "未完善信息，注册失败", Toast.LENGTH_SHORT).show();
+            register();
+        }
+    }
+
+    private void refreshCaptcha() {
+        captchaImage.setImageBitmap(Code.getInstance().createBitmap());
+        realCode = Code.getInstance().getCode().toLowerCase();
+    }
+
+    private void register() {
+        String account = accountInput.getText().toString().trim();
+        String password = passwordInput.getText().toString();
+        String confirmPassword = confirmPasswordInput.getText().toString();
+        String captcha = captchaInput.getText().toString().trim().toLowerCase();
+
+        if (TextUtils.isEmpty(account) || TextUtils.isEmpty(password) || TextUtils.isEmpty(captcha)) {
+            showMessage("\u8bf7\u5b8c\u6574\u586b\u5199\u6ce8\u518c\u4fe1\u606f");
+            return;
+        }
+        if (!password.equals(confirmPassword)) {
+            showMessage("\u4e24\u6b21\u8f93\u5165\u7684\u5bc6\u7801\u4e0d\u4e00\u81f4");
+            return;
+        }
+        if (!captcha.equals(realCode)) {
+            showMessage("\u9a8c\u8bc1\u7801\u9519\u8bef");
+            refreshCaptcha();
+            return;
+        }
+
+        LoadingDialogUtil.showLoadingDialog(this);
+        CommonRequest request = new CommonRequest();
+        request.addRequestParam("account", account);
+        request.addRequestParam("password", password);
+        new HttpPostTask(request, handler, new ResponseHandler() {
+            @Override
+            public void success(CommonResponse response) {
+                LoadingDialogUtil.cancelLoading();
+                Constant.landing = true;
+                Constant.account = account;
+                showMessage(response.getResMsg());
+                startActivity(new Intent(RegisterActivity.this, MainActivity.class));
+                finish();
             }
-        }
-    }
 
-    protected class MyAsyncTask extends AsyncTask<String, Integer, String> {
-
-        @Override
-        protected void onPreExecute() {
-            Log.w("WangXG", "task onPreExecute()");
-        }
-
-        /**
-         * @param params 这里的params是一个数组，即AsyncTask在激活运行是调用execute()方法传入的参数
-         */
-        @Override
-        protected String doInBackground(String... params) {
-            Log.w("WangXG", "task doInBackground()");
-            HttpURLConnection connection = null;
-            StringBuilder response = new StringBuilder();
-            try {
-                URL url = new URL(params[0]); // 声明一个URL,注意如果用百度首页实验，请使用https开头，否则获取不到返回报文
-                connection = (HttpURLConnection) url.openConnection(); // 打开该URL连接
-                connection.setRequestMethod("GET"); // 设置请求方法，“POST或GET”，我们这里用GET，在说到POST的时候再用POST
-                connection.setConnectTimeout(80000); // 设置连接建立的超时时间
-                connection.setReadTimeout(80000); // 设置网络报文收发超时时间
-                InputStream in = connection.getInputStream();  // 通过连接的输入流获取下发报文，然后就是Java的流处理
-                BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    response.append(line);
-                }
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            } catch (IOException e) {
-                e.printStackTrace();
+            @Override
+            public void fail(String failCode, String failMsg) {
+                LoadingDialogUtil.cancelLoading();
+                showMessage(TextUtils.isEmpty(failMsg) ? "\u6ce8\u518c\u5931\u8d25" : failMsg);
+                refreshCaptcha();
             }
-            return response.toString(); // 这里返回的结果就作为onPostExecute方法的入参
-        }
-
-        @Override
-        protected void onProgressUpdate(Integer... values) {
-            Log.w("WangXG", "task onProgressUpdate()");
-            // 如果在doInBackground方法，那么就会立刻执行本方法
-            // 本方法在UI线程中执行，可以更新UI元素，典型的就是更新进度条进度，一般是在下载时候使用
-        }
-
-        /**
-         * 运行在UI线程中，所以可以直接操作UI元素
-         * @param s
-         */
-        @Override
-        protected void onPostExecute(String s) {
-            Log.w("WangXG", "task onPostExecute()");
-            Toast.makeText(RegisterActivity.this, s, Toast.LENGTH_SHORT).show();
-            Log.w("WangXG", s);
-            myReMethod(s);
-
-        }
+        }).execute(Constant.URL_Register);
     }
 
-    private void myReMethod(String reValue) {
-        if(reValue.contains("成功")){
-            Constant.landing = true;
-            Log.d("LoginActivity","landing="+Constant.landing);
-            Constant.account=account;
-            Log.d("LoginActivity","account="+Constant.account);
-            Intent intent = new Intent(RegisterActivity.this, MainActivity.class);
-            startActivity(intent);
-            finish();
-        }
+    private void showMessage(String message) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show();
     }
+
+    private final Handler handler = new Handler(Looper.getMainLooper()) {
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            LoadingDialogUtil.cancelLoading();
+            showMessage("\u7f51\u7edc\u8bf7\u6c42\u5931\u8d25\uff0c\u8bf7\u68c0\u67e5\u670d\u52a1\u5668");
+        }
+    };
 }

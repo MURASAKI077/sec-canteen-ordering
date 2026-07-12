@@ -14,38 +14,48 @@ import java.util.Map;
 @WebServlet("/LoginServlet")
 public class LoginServlet extends HttpServlet {
     @Override
-    protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        handle(request, response);
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        CommonResponse commonResponse = new CommonResponse();
+        commonResponse.setResult("1", "请使用POST请求登录");
+        ResponseUtil.writeJson(response, commonResponse);
     }
 
     @Override
-    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-        handle(request, response);
-    }
-
-    private void handle(HttpServletRequest request, HttpServletResponse response) throws IOException {
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        CommonResponse commonResponse = new CommonResponse();
         try {
             Map<String, String> params = RequestUtil.readParams(request);
             String account = params.getOrDefault("account", "").trim();
-            String password = params.getOrDefault("password", "").trim();
+            String password = params.getOrDefault("password", "");
 
             if (account.isEmpty() || password.isEmpty()) {
-                ResponseUtil.writeText(response, "登录失败: 账号或密码为空");
-                return;
-            }
-
-            try (Connection connection = DatabaseUtil.getConnection();
-                 PreparedStatement statement = connection.prepareStatement(
-                         "SELECT userId FROM account WHERE userAccount = ? AND userPassword = ?")) {
-                statement.setString(1, account);
-                statement.setString(2, password);
-                try (ResultSet resultSet = statement.executeQuery()) {
-                    ResponseUtil.writeText(response, resultSet.next() ? "登录成功" : "登录失败");
-                }
+                commonResponse.setResult("1", "账号和密码不能为空");
+            } else {
+                authenticate(commonResponse, account, password);
             }
         } catch (Exception e) {
-            response.setStatus(HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
-            ResponseUtil.writeText(response, "登录失败: " + e.getMessage());
+            commonResponse.setResult("1", "登录服务暂时不可用");
+        }
+        ResponseUtil.writeJson(response, commonResponse);
+    }
+
+    private void authenticate(CommonResponse response, String account, String password) throws Exception {
+        try (Connection connection = DatabaseUtil.getConnection();
+             PreparedStatement statement = connection.prepareStatement(
+                     "SELECT userId, userPassword FROM account WHERE userAccount = ?")) {
+            statement.setString(1, account);
+            try (ResultSet resultSet = statement.executeQuery()) {
+                if (!resultSet.next()
+                        || !PasswordUtil.verify(password, resultSet.getString("userPassword"))) {
+                    response.setResult("1", "账号或密码错误");
+                    return;
+                }
+                response.setResult("0", "登录成功");
+                response.addProperty("userId", String.valueOf(resultSet.getInt("userId")));
+                response.addProperty("account", account);
+            }
         }
     }
 }

@@ -27,9 +27,10 @@ DROP TABLE IF EXISTS account;
 
 CREATE TABLE account (
   userId INT NOT NULL AUTO_INCREMENT,
-  userAccount TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  userPassword TEXT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
-  PRIMARY KEY (userId)
+  userAccount VARCHAR(64) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  userPassword VARCHAR(100) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL,
+  PRIMARY KEY (userId),
+  UNIQUE INDEX uk_account_userAccount (userAccount)
 ) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 CREATE TABLE dishes (
@@ -61,13 +62,13 @@ CREATE TABLE orders (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 INSERT INTO account (userId, userAccount, userPassword) VALUES
-(1, '1234', '1234'),
-(2, '123', '123'),
-(3, '12345', '12345'),
-(4, 'ABC', 'abc'),
-(5, '1774971', '123456'),
-(6, 'abcd', 'abc'),
-(7, '就是我', '123456');
+(1, '1234', '$2a$10$19gRSrjn6ee5d2O7LC2nPuyMVOCamIrmby.7KUjmZcTH6klwdGif6'),
+(2, '123', '$2a$10$aXzpLeoXzzh12SgyrkymV.eIXPg.lVtfe3CqXB4KBIi/deDGqBETu'),
+(3, '12345', '$2a$10$ABnefXQvdueWT23csI.L9.7W7qcYTSliszypn9evpLdRZilcQuGgW'),
+(4, 'ABC', '$2a$10$ovZw5/bYF5Y0Knj8/BvA0uUIVEduxSWYMmyfixnRcpJZZuA8vdNNG'),
+(5, '1774971', '$2a$10$0cyzDDCIfTxSXLNJYixfOO.cJdw5vZ7gMGqHqdYbZmxBE9ScFV3rO'),
+(6, 'abcd', '$2a$10$GTj36K7cfqM7PammjyNyBeqmCHqNZCTkheqyBCcu6vR.d8QGT.v6a'),
+(7, '就是我', '$2a$10$dKkNuJKAcKl.bpsmDRMCNe6ungL1NN/w6T15UyoOrYG4BmgknqHUC');
 
 INSERT INTO dishes (dishId, dishName, dishWindow, dishRoom, price) VALUES
 (1, '招牌烤冷面', '强子烤冷面 石锅拌饭', '风味餐厅', 7.5),
