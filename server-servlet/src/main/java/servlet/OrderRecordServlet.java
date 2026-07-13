@@ -39,10 +39,12 @@ public class OrderRecordServlet extends HttpServlet {
             try (Connection connection = DatabaseUtil.getConnection();
                  PreparedStatement statement = connection.prepareStatement(
                          "SELECT o.orderId, o.quantity, o.status, o.orderTime, " +
-                                 "d.dishName, d.dishWindow, d.dishRoom, d.price " +
+                                 "d.dishName, d.dishWindow, d.dishRoom, d.price, " +
+                                 "r.rating, r.content AS reviewContent " +
                                  "FROM orders o " +
                                  "JOIN account a ON o.userId = a.userId " +
                                  "JOIN dishes d ON o.dishId = d.dishId " +
+                                 "LEFT JOIN reviews r ON o.orderId = r.orderId " +
                                  "WHERE a.userAccount = ? " +
                                  "ORDER BY o.orderTime DESC, o.orderId DESC")) {
                 statement.setString(1, account);
@@ -57,6 +59,11 @@ public class OrderRecordServlet extends HttpServlet {
                         item.put("quantity", String.valueOf(resultSet.getInt("quantity")));
                         item.put("status", resultSet.getString("status"));
                         item.put("orderTime", resultSet.getTimestamp("orderTime").toString());
+                        int rating = resultSet.getInt("rating");
+                        boolean reviewed = !resultSet.wasNull();
+                        item.put("reviewed", reviewed ? "1" : "0");
+                        item.put("rating", reviewed ? String.valueOf(rating) : "");
+                        item.put("reviewContent", reviewed ? resultSet.getString("reviewContent") : "");
                         commonResponse.addListItem(item);
                     }
                 }

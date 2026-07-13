@@ -5,9 +5,9 @@
   新要求：
   1. MySQL 版本建议使用 MySQL 8.4 LTS。
   2. 数据库名固定为 sec_database。
-  3. 仅保留 account、dishes、orders 三张核心表，删除学长项目遗留 collect 表。
+  3. 保留 account、dishes、orders 三张核心表，并新增 reviews 表记录订单评价。
   4. 全局字符集使用 utf8mb4，排序规则使用 utf8mb4_general_ci。
-  5. orders 表字段冻结，只包含 userId、dishId，不新增 orderId、status、orderTime 等字段。
+  5. orders 表包含 orderId、quantity、status、orderTime，用于订单生命周期和个人中心展示。
   6. 测试数据沿用原项目 ID，便于前后端联调。
 */
 
@@ -21,6 +21,7 @@ CREATE DATABASE sec_database
 
 USE sec_database;
 
+DROP TABLE IF EXISTS reviews;
 DROP TABLE IF EXISTS orders;
 DROP TABLE IF EXISTS dishes;
 DROP TABLE IF EXISTS account;
@@ -59,6 +60,22 @@ CREATE TABLE orders (
   CONSTRAINT fk_orders_dishes
     FOREIGN KEY (dishId) REFERENCES dishes (dishId)
     ON DELETE CASCADE ON UPDATE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+CREATE TABLE reviews (
+  reviewId BIGINT NOT NULL AUTO_INCREMENT,
+  orderId BIGINT NOT NULL,
+  rating TINYINT NOT NULL,
+  content VARCHAR(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
+  createTime TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updateTime TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (reviewId),
+  UNIQUE INDEX uk_reviews_orderId (orderId),
+  INDEX idx_reviews_rating (rating),
+  CONSTRAINT fk_reviews_orders
+    FOREIGN KEY (orderId) REFERENCES orders (orderId)
+    ON DELETE CASCADE ON UPDATE CASCADE,
+  CONSTRAINT ck_reviews_rating CHECK (rating BETWEEN 1 AND 5)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 INSERT INTO account (userId, userAccount, userPassword) VALUES

@@ -4,7 +4,7 @@ import android.os.Handler;
 import android.widget.Toast;
 
 import androidx.fragment.app.FragmentActivity;
-
+//负责下单处理
 public final class OrderHelper {
 
     private OrderHelper() {
