@@ -9,7 +9,7 @@ import android.widget.TextView;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-
+//负责把订单数据显示出来
 public class OrderAdapter extends BaseAdapter {
     private final Activity activity;
     private final ArrayList<HashMap<String, String>> orders;

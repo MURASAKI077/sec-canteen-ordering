@@ -6,7 +6,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 
 import java.util.Random;
-
+//生成验证码图片
 /**
  * Created by littlecurl 2018/6/24
  */
