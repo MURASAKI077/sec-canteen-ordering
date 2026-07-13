@@ -51,6 +51,7 @@ public class OrderAdapter extends BaseAdapter {
             holder.status = convertView.findViewById(R.id.tv_order_status);
             holder.time = convertView.findViewById(R.id.tv_order_time);
             holder.orderId = convertView.findViewById(R.id.tv_order_id);
+            holder.review = convertView.findViewById(R.id.tv_order_review);
             convertView.setTag(holder);
         } else {
             holder = (ViewHolder) convertView.getTag();
@@ -65,7 +66,20 @@ public class OrderAdapter extends BaseAdapter {
         holder.status.setAlpha("CANCELLED".equals(status) ? 0.55f : 1f);
         holder.time.setText(value(order, "orderTime"));
         holder.orderId.setText("订单 #" + value(order, "orderId"));
+        holder.review.setText(buildReviewText(order, status));
         return convertView;
+    }
+
+    private String buildReviewText(HashMap<String, String> order, String status) {
+        if ("CANCELLED".equals(status)) {
+            return "已取消订单不可评价";
+        }
+        if ("1".equals(order.get("reviewed"))) {
+            String rating = value(order, "rating");
+            String content = value(order, "reviewContent");
+            return "已评价：" + rating + "星" + (content.isEmpty() ? "" : " · " + content);
+        }
+        return "未评价，点击订单可评价";
     }
 
     private String value(HashMap<String, String> order, String key) {
@@ -80,5 +94,6 @@ public class OrderAdapter extends BaseAdapter {
         TextView status;
         TextView time;
         TextView orderId;
+        TextView review;
     }
 }

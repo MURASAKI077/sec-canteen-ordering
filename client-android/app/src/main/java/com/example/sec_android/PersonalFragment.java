@@ -11,7 +11,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -145,19 +148,93 @@ public class PersonalFragment extends Fragment {
             return;
         }
 
-        View.OnClickListener cancelListener = v -> DialogUtil.dismissDialog();
-        View.OnClickListener confirmListener = v -> {
+        View.OnClickListener cancelOrderListener = v -> {
             DialogUtil.dismissDialog();
             cancelOrder(orderId);
+        };
+        View.OnClickListener reviewListener = v -> {
+            DialogUtil.dismissDialog();
+            showReviewDialog(order);
         };
 
         DialogUtil.showDecideDialogWithTitle(
                 requireContext(),
-                "\u662f\u5426\u53d6\u6d88\u8ba2\u5355",
+                "\u8ba2\u5355\u64cd\u4f5c",
                 name == null ? "" : name,
-                cancelListener,
-                confirmListener
+                "\u53d6\u6d88\u8ba2\u5355",
+                cancelOrderListener,
+                "1".equals(order.get("reviewed")) ? "\u4fee\u6539\u8bc4\u4ef7" : "\u8bc4\u4ef7",
+                reviewListener
         );
+    }
+
+    private void showReviewDialog(HashMap<String, String> order) {
+        if (!isAdded()) {
+            return;
+        }
+
+        View reviewView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_review, null);
+        TextView dishTextView = reviewView.findViewById(R.id.tv_review_dish);
+        RatingBar ratingBar = reviewView.findViewById(R.id.rb_review_rating);
+        EditText contentEditText = reviewView.findViewById(R.id.et_review_content);
+        Button cancelButton = reviewView.findViewById(R.id.btn_review_cancel);
+        Button submitButton = reviewView.findViewById(R.id.btn_review_submit);
+
+        String name = order.get("name");
+        dishTextView.setText(name == null ? "" : name);
+        ratingBar.setRating(parseRating(order.get("rating")));
+        contentEditText.setText(order.get("reviewContent"));
+
+        cancelButton.setOnClickListener(v -> DialogUtil.dismissDialog());
+        submitButton.setOnClickListener(v -> {
+            int rating = Math.round(ratingBar.getRating());
+            String content = contentEditText.getText().toString().trim();
+            if (rating < 1) {
+                Toast.makeText(requireContext(), "\u8bf7\u9009\u62e9\u8bc4\u5206", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            submitReview(order.get("orderId"), rating, content);
+        });
+
+        DialogUtil.showCustomDialog(requireContext(), reviewView, true);
+    }
+
+    private int parseRating(String ratingText) {
+        try {
+            int rating = Integer.parseInt(ratingText);
+            return rating < 1 || rating > 5 ? 5 : rating;
+        } catch (Exception ignored) {
+            return 5;
+        }
+    }
+
+    private void submitReview(String orderId, int rating, String content) {
+        CommonRequest request = new CommonRequest();
+        request.addRequestParam("account", Constant.account);
+        request.addRequestParam("orderId", orderId == null ? "" : orderId);
+        request.addRequestParam("rating", String.valueOf(rating));
+        request.addRequestParam("content", content == null ? "" : content);
+        sendHttpPostRequest(Constant.URL_Review, request, new ResponseHandler() {
+            @Override
+            public void success(CommonResponse response) {
+                if (!isAdded()) {
+                    return;
+                }
+                DialogUtil.dismissDialog();
+                Toast.makeText(requireContext(), "\u8bc4\u4ef7\u5df2\u4fdd\u5b58", Toast.LENGTH_SHORT).show();
+                loadOrderHistory();
+            }
+
+            @Override
+            public void fail(String failCode, String failMsg) {
+                if (!isAdded()) {
+                    return;
+                }
+                DialogUtil.showHintDialog(requireContext(),
+                        TextUtils.isEmpty(failMsg) ? "\u8bc4\u4ef7\u63d0\u4ea4\u5931\u8d25" : failMsg,
+                        false);
+            }
+        });
     }
 
     private void cancelOrder(String orderId) {
