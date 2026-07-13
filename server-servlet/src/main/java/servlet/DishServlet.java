@@ -48,7 +48,7 @@ public class DishServlet extends HttpServlet {
         boolean hasKeyword = !keyword.isEmpty();
         String sql = "SELECT dishId, dishName, dishWindow, dishRoom, price FROM dishes";
         if (hasKeyword) {
-            sql += " WHERE dishName LIKE ? OR dishWindow LIKE ? OR dishRoom LIKE ?";
+            sql += " WHERE dishName LIKE ?";
         }
         sql += " ORDER BY dishId";
 
@@ -57,8 +57,6 @@ public class DishServlet extends HttpServlet {
             if (hasKeyword) {
                 String pattern = "%" + keyword + "%";
                 statement.setString(1, pattern);
-                statement.setString(2, pattern);
-                statement.setString(3, pattern);
             }
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {

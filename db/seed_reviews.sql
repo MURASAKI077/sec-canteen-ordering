@@ -42,9 +42,9 @@ INSERT INTO reviews (orderId, rating, content)
 SELECT o.orderId,
        CASE s.sampleNo WHEN 1 THEN 5 WHEN 2 THEN 4 ELSE 5 END AS rating,
        CASE s.sampleNo
-           WHEN 1 THEN CONCAT(d.dishName, '味道不错，分量也够。')
-           WHEN 2 THEN CONCAT(d.dishName, '出餐挺快，适合赶时间。')
-           ELSE CONCAT(d.dishName, '整体满意，下次还会点。')
+           WHEN 1 THEN CONCAT('菜品：', d.dishName, '。口味稳定，窗口「', d.dishWindow, '」出餐很顺。')
+           WHEN 2 THEN CONCAT('这份', d.dishName, '价格合适，在', d.dishRoom, '吃起来比较方便。')
+           ELSE CONCAT(d.dishName, '整体满意，分量和味道都在线，适合下次复点。')
        END AS content
 FROM dishes d
 JOIN (

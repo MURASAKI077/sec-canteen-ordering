@@ -45,7 +45,7 @@ public class DishReviewServlet extends HttpServlet {
     private void queryReviews(CommonResponse response, int dishId) throws Exception {
         try (Connection connection = DatabaseUtil.getConnection();
              PreparedStatement statement = connection.prepareStatement(
-                     "SELECT r.rating, r.content, r.createTime, a.userAccount " +
+                     "SELECT r.reviewId, r.orderId, o.dishId, r.rating, r.content, r.createTime, a.userAccount " +
                              "FROM reviews r " +
                              "JOIN orders o ON r.orderId = o.orderId " +
                              "JOIN account a ON o.userId = a.userId " +
@@ -56,6 +56,9 @@ public class DishReviewServlet extends HttpServlet {
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     HashMap<String, String> item = new HashMap<>();
+                    item.put("reviewId", String.valueOf(resultSet.getLong("reviewId")));
+                    item.put("orderId", String.valueOf(resultSet.getLong("orderId")));
+                    item.put("dishId", String.valueOf(resultSet.getInt("dishId")));
                     item.put("rating", String.valueOf(resultSet.getInt("rating")));
                     item.put("content", resultSet.getString("content"));
                     item.put("account", maskAccount(resultSet.getString("userAccount")));

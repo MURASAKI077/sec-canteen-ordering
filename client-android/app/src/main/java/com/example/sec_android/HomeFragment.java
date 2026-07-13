@@ -177,7 +177,10 @@ public class HomeFragment extends Fragment {
             if (builder.length() > 0) {
                 builder.append("\n\n");
             }
-            builder.append(value(item, "account"))
+            builder.append("评价 #")
+                    .append(value(item, "reviewId"))
+                    .append("  ")
+                    .append(value(item, "account"))
                     .append("：")
                     .append(value(item, "rating"))
                     .append("星")
