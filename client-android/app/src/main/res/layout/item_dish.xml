@@ -1,48 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
     android:padding="15dp">
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="60dp"
+        android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:padding="3dp"
-        android:layout_marginTop="0dp">
+        android:padding="3dp">
 
         <TextView
             android:id="@+id/tv_room"
             android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
             android:textAlignment="center"
-            android:textSize="18sp" />
+            android:textSize="16sp" />
 
         <TextView
             android:id="@+id/tv_window"
             android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="2"
             android:gravity="center"
             android:textAlignment="center"
-            android:textSize="18sp" />
+            android:textSize="16sp" />
 
         <TextView
             android:id="@+id/tv_name"
             android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="2"
             android:gravity="center"
             android:textAlignment="center"
-            android:textSize="18sp" />
+            android:textColor="@color/ui_text_main"
+            android:textSize="16sp"
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/tv_price"
             android:layout_width="0dp"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
             android:gravity="center"
             android:textAlignment="center"
@@ -50,5 +52,44 @@
             android:textColor="#d97e87" />
     </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/layout_dish_actions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="end"
+        android:orientation="horizontal">
 
-</RelativeLayout>
+        <TextView
+            android:id="@+id/btn_dish_order"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:background="@drawable/selector_order_action_primary"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:minWidth="72dp"
+            android:paddingLeft="14dp"
+            android:paddingRight="14dp"
+            android:text="点单"
+            android:textColor="@color/ui_primary"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/btn_dish_reviews"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:layout_marginLeft="8dp"
+            android:background="@drawable/selector_order_action_primary"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:minWidth="84dp"
+            android:paddingLeft="14dp"
+            android:paddingRight="14dp"
+            android:text="查看评价"
+            android:textColor="@color/ui_primary"
+            android:textSize="13sp" />
+    </LinearLayout>
+
+</LinearLayout>

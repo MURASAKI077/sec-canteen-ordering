@@ -54,7 +54,6 @@ public class HomeFragment extends Fragment {
             return false;
         });
 
-        dishListView.setOnItemClickListener((parent, itemView, position, id) -> showOrderConfirmation(itemView));
     }
 
     private void loadDishList() {
@@ -77,7 +76,17 @@ public class HomeFragment extends Fragment {
                 }
 
                 LoadingDialogUtil.cancelLoading();
-                dishAdapter = new ProductAdapter(requireActivity(), response.getDataList());
+                dishAdapter = new ProductAdapter(requireActivity(), response.getDataList(), new ProductAdapter.OnDishActionListener() {
+                    @Override
+                    public void onOrderDish(java.util.HashMap<String, String> dish) {
+                        showOrderConfirmation(dish);
+                    }
+
+                    @Override
+                    public void onViewReviews(java.util.HashMap<String, String> dish) {
+                        loadDishReviews(dish);
+                    }
+                });
                 dishListView.setAdapter(dishAdapter);
 
                 if (response.getDataList().isEmpty()) {
@@ -98,7 +107,7 @@ public class HomeFragment extends Fragment {
         });
     }
 
-    private void showOrderConfirmation(View itemView) {
+    private void showOrderConfirmation(java.util.HashMap<String, String> dish) {
         if (!isAdded()) {
             return;
         }
@@ -107,10 +116,10 @@ public class HomeFragment extends Fragment {
             return;
         }
 
-        String room = getText(itemView, R.id.tv_room);
-        String window = getText(itemView, R.id.tv_window);
-        String name = getText(itemView, R.id.tv_name);
-        String price = getText(itemView, R.id.tv_price);
+        String room = value(dish, "room");
+        String window = value(dish, "window");
+        String name = value(dish, "name");
+        String price = value(dish, "price");
 
         View.OnClickListener cancelListener = v -> DialogUtil.dismissDialog();
         View.OnClickListener confirmListener = v -> {
@@ -127,9 +136,60 @@ public class HomeFragment extends Fragment {
         );
     }
 
-    private String getText(View itemView, int viewId) {
-        TextView textView = itemView.findViewById(viewId);
-        return textView == null ? "" : textView.getText().toString();
+    private void loadDishReviews(java.util.HashMap<String, String> dish) {
+        if (!isAdded()) {
+            return;
+        }
+
+        CommonRequest request = new CommonRequest();
+        request.addRequestParam("dishId", value(dish, "dishId"));
+        sendHttpPostRequest(Constant.URL + "DishReviewServlet", request, new ResponseHandler() {
+            @Override
+            public void success(CommonResponse response) {
+                if (!isAdded()) {
+                    return;
+                }
+                DialogUtil.showHintDialogWithTitle(
+                        requireContext(),
+                        value(dish, "name") + "的评价",
+                        buildReviewText(response),
+                        false
+                );
+            }
+
+            @Override
+            public void fail(String failCode, String failMsg) {
+                if (!isAdded()) {
+                    return;
+                }
+                Toast.makeText(requireContext(), "获取评价失败", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private String buildReviewText(CommonResponse response) {
+        if (response.getDataList().isEmpty()) {
+            return "暂无评价";
+        }
+
+        StringBuilder builder = new StringBuilder();
+        for (java.util.HashMap<String, String> item : response.getDataList()) {
+            if (builder.length() > 0) {
+                builder.append("\n\n");
+            }
+            builder.append(value(item, "account"))
+                    .append("：")
+                    .append(value(item, "rating"))
+                    .append("星")
+                    .append("\n")
+                    .append(value(item, "content"));
+        }
+        return builder.toString();
+    }
+
+    private String value(java.util.HashMap<String, String> map, String key) {
+        String value = map.get(key);
+        return value == null ? "" : value;
     }
 
     private void sendHttpPostRequest(String url,

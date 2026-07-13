@@ -17,6 +17,7 @@ public class ProductAdapter extends BaseAdapter implements Filterable {
 
     private final Activity activity;
     private ArrayList<HashMap<String, String>> list;
+    private final OnDishActionListener actionListener;
 
     // 保存原始列表，搜索过滤时需要从原始数据中筛选
     private ArrayList<HashMap<String, String>> originalValues;
@@ -25,8 +26,15 @@ public class ProductAdapter extends BaseAdapter implements Filterable {
     private ArrayFilter filter;
 
     public ProductAdapter(Activity activity, ArrayList<HashMap<String, String>> list) {
+        this(activity, list, null);
+    }
+
+    public ProductAdapter(Activity activity,
+                          ArrayList<HashMap<String, String>> list,
+                          OnDishActionListener actionListener) {
         this.activity = activity;
         this.list = list;
+        this.actionListener = actionListener;
     }
 
     @Override
@@ -57,6 +65,8 @@ public class ProductAdapter extends BaseAdapter implements Filterable {
             holder.tvWindow = convertView.findViewById(R.id.tv_window);
             holder.tvName = convertView.findViewById(R.id.tv_name);
             holder.tvPrice = convertView.findViewById(R.id.tv_price);
+            holder.orderButton = convertView.findViewById(R.id.btn_dish_order);
+            holder.reviewsButton = convertView.findViewById(R.id.btn_dish_reviews);
 
             convertView.setTag(holder);
         } else {
@@ -68,6 +78,8 @@ public class ProductAdapter extends BaseAdapter implements Filterable {
         holder.tvWindow.setText(map.get("window"));
         holder.tvName.setText(map.get("name"));
         holder.tvPrice.setText(map.get("price"));
+        holder.orderButton.setOnClickListener(actionListener == null ? null : v -> actionListener.onOrderDish(map));
+        holder.reviewsButton.setOnClickListener(actionListener == null ? null : v -> actionListener.onViewReviews(map));
 
         return convertView;
     }
@@ -147,5 +159,13 @@ public class ProductAdapter extends BaseAdapter implements Filterable {
         private TextView tvWindow;
         private TextView tvName;
         private TextView tvPrice;
+        private TextView orderButton;
+        private TextView reviewsButton;
+    }
+
+    public interface OnDishActionListener {
+        void onOrderDish(HashMap<String, String> dish);
+
+        void onViewReviews(HashMap<String, String> dish);
     }
 }

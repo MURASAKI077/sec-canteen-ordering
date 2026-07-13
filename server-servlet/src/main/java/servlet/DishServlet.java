@@ -46,7 +46,7 @@ public class DishServlet extends HttpServlet {
 
     private void queryDishes(CommonResponse response, String keyword) throws Exception {
         boolean hasKeyword = !keyword.isEmpty();
-        String sql = "SELECT dishName, dishWindow, dishRoom, price FROM dishes";
+        String sql = "SELECT dishId, dishName, dishWindow, dishRoom, price FROM dishes";
         if (hasKeyword) {
             sql += " WHERE dishName LIKE ? OR dishWindow LIKE ? OR dishRoom LIKE ?";
         }
@@ -63,6 +63,7 @@ public class DishServlet extends HttpServlet {
             try (ResultSet resultSet = statement.executeQuery()) {
                 while (resultSet.next()) {
                     HashMap<String, String> item = new HashMap<>();
+                    item.put("dishId", String.valueOf(resultSet.getInt("dishId")));
                     item.put("name", resultSet.getString("dishName"));
                     item.put("window", resultSet.getString("dishWindow"));
                     item.put("room", resultSet.getString("dishRoom"));
