@@ -1,0 +1,8 @@
+# Copy this file to ai.properties and fill in your DeepSeek API key.
+# Do not commit the real ai.properties file.
+
+ai.enabled=true
+deepseek.apiKey=YOUR_DEEPSEEK_API_KEY
+deepseek.baseUrl=https://api.deepseek.com
+deepseek.model=deepseek-chat
+deepseek.timeoutSeconds=20

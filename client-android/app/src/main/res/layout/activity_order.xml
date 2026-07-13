@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="54dp"
+        android:background="@color/ui_primary"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingLeft="12dp"
+        android:paddingRight="12dp">
+
+        <TextView
+            android:id="@+id/tv_order_back"
+            android:layout_width="64dp"
+            android:layout_height="match_parent"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:text="返回"
+            android:textColor="@color/ui_text_inverse"
+            android:textSize="18sp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="点餐"
+            android:textColor="@color/ui_text_inverse"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <Space
+            android:layout_width="64dp"
+            android:layout_height="match_parent" />
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/order_fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1" />
+</LinearLayout>

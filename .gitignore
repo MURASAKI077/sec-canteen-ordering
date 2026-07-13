@@ -20,6 +20,7 @@ server-servlet/tools/*.class
 # 服务端
 server-servlet/target/
 server-servlet/src/main/resources/db.properties
+server-servlet/src/main/resources/ai.properties
 
 # 系统杂项
 .DS_Store

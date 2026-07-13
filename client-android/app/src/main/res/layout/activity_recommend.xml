@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/ui_background"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="54dp"
+        android:background="@color/ui_primary"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingLeft="12dp"
+        android:paddingRight="12dp">
+
+        <TextView
+            android:id="@+id/tv_recommend_back"
+            android:layout_width="64dp"
+            android:layout_height="match_parent"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center_vertical"
+            android:text="返回"
+            android:textColor="@color/ui_text_inverse"
+            android:textSize="18sp" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:text="智能推荐"
+            android:textColor="@color/ui_text_inverse"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <Space
+            android:layout_width="64dp"
+            android:layout_height="match_parent" />
+    </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/scroll_recommend_messages"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true"
+        android:padding="12dp">
+
+        <LinearLayout
+            android:id="@+id/layout_recommend_messages"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+    </ScrollView>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/ui_surface"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="10dp">
+
+        <EditText
+            android:id="@+id/et_recommend_input"
+            android:layout_width="0dp"
+            android:layout_height="46dp"
+            android:layout_weight="1"
+            android:background="@drawable/edittext"
+            android:hint="描述你想吃的类型"
+            android:imeOptions="actionSend"
+            android:inputType="textMultiLine"
+            android:maxLength="300"
+            android:maxLines="3"
+            android:paddingLeft="12dp"
+            android:paddingRight="12dp"
+            android:textColor="@color/ui_text_main"
+            android:textColorHint="@color/ui_text_hint"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/btn_recommend_send"
+            android:layout_width="72dp"
+            android:layout_height="46dp"
+            android:layout_marginLeft="8dp"
+            android:background="@drawable/selector_loginactivity_button"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="发送"
+            android:textColor="@color/ui_text_inverse"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+</LinearLayout>
