@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.text.InputFilter;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
@@ -16,6 +17,14 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class RegisterActivity extends AppCompatActivity implements View.OnClickListener {
+    private static final int ACCOUNT_MIN_LENGTH = 3;
+    private static final int ACCOUNT_MAX_LENGTH = 20;
+    private static final int PASSWORD_MIN_LENGTH = 6;
+    private static final int PASSWORD_MAX_LENGTH = 20;
+    private static final int CAPTCHA_LENGTH = 4;
+    private static final String ACCOUNT_PATTERN = "^[A-Za-z0-9_]+$";
+    private static final String PASSWORD_PATTERN = "^(?=.*[A-Za-z])(?=.*\\d)[A-Za-z\\d]+$";
+
     private String realCode;
     private Button registerButton;
     private ImageView backButton;
@@ -41,6 +50,14 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         confirmPasswordInput = findViewById(R.id.et_registeractivity_password2);
         captchaInput = findViewById(R.id.et_registeractivity_phoneCodes);
         captchaImage = findViewById(R.id.iv_registeractivity_showCode);
+        accountInput.setFilters(new InputFilter[]{new InputFilter.LengthFilter(ACCOUNT_MAX_LENGTH)});
+        passwordInput.setFilters(new InputFilter[]{new InputFilter.LengthFilter(PASSWORD_MAX_LENGTH)});
+        confirmPasswordInput.setFilters(new InputFilter[]{new InputFilter.LengthFilter(PASSWORD_MAX_LENGTH)});
+        captchaInput.setFilters(new InputFilter[]{new InputFilter.LengthFilter(CAPTCHA_LENGTH)});
+        accountInput.setHint("3-20 位字母/数字/下划线");
+        passwordInput.setHint("6-20 位字母+数字");
+        confirmPasswordInput.setHint("请再次输入密码");
+        captchaInput.setHint("请输入 4 位验证码");
 
         backButton.setOnClickListener(this);
         captchaImage.setOnClickListener(this);
@@ -70,16 +87,13 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
         String confirmPassword = confirmPasswordInput.getText().toString();
         String captcha = captchaInput.getText().toString().trim().toLowerCase();
 
-        if (TextUtils.isEmpty(account) || TextUtils.isEmpty(password) || TextUtils.isEmpty(captcha)) {
-            showMessage("\u8bf7\u5b8c\u6574\u586b\u5199\u6ce8\u518c\u4fe1\u606f");
+        if (!validateRegisterInput(account, password, confirmPassword, captcha)) {
             return;
         }
-        if (!password.equals(confirmPassword)) {
-            showMessage("\u4e24\u6b21\u8f93\u5165\u7684\u5bc6\u7801\u4e0d\u4e00\u81f4");
-            return;
-        }
+
         if (!captcha.equals(realCode)) {
-            showMessage("\u9a8c\u8bc1\u7801\u9519\u8bef");
+            captchaInput.setError("验证码错误");
+            captchaInput.requestFocus();
             refreshCaptcha();
             return;
         }
@@ -106,6 +120,60 @@ public class RegisterActivity extends AppCompatActivity implements View.OnClickL
                 refreshCaptcha();
             }
         }).execute(Constant.URL_Register);
+    }
+
+    private boolean validateRegisterInput(String account, String password, String confirmPassword, String captcha) {
+        if (TextUtils.isEmpty(account)) {
+            accountInput.setError("请输入账号");
+            accountInput.requestFocus();
+            return false;
+        }
+        if (account.length() < ACCOUNT_MIN_LENGTH) {
+            accountInput.setError("账号至少需要 3 位");
+            accountInput.requestFocus();
+            return false;
+        }
+        if (!account.matches(ACCOUNT_PATTERN)) {
+            accountInput.setError("账号只能包含字母、数字或下划线");
+            accountInput.requestFocus();
+            return false;
+        }
+        if (TextUtils.isEmpty(password)) {
+            passwordInput.setError("请输入密码");
+            passwordInput.requestFocus();
+            return false;
+        }
+        if (password.length() < PASSWORD_MIN_LENGTH) {
+            passwordInput.setError("密码至少需要 6 位");
+            passwordInput.requestFocus();
+            return false;
+        }
+        if (!password.matches(PASSWORD_PATTERN)) {
+            passwordInput.setError("密码需同时包含字母和数字");
+            passwordInput.requestFocus();
+            return false;
+        }
+        if (TextUtils.isEmpty(confirmPassword)) {
+            confirmPasswordInput.setError("请再次输入密码");
+            confirmPasswordInput.requestFocus();
+            return false;
+        }
+        if (!password.equals(confirmPassword)) {
+            confirmPasswordInput.setError("两次密码不一致");
+            confirmPasswordInput.requestFocus();
+            return false;
+        }
+        if (TextUtils.isEmpty(captcha)) {
+            captchaInput.setError("请输入验证码");
+            captchaInput.requestFocus();
+            return false;
+        }
+        if (captcha.length() != CAPTCHA_LENGTH) {
+            captchaInput.setError("验证码为 4 位");
+            captchaInput.requestFocus();
+            return false;
+        }
+        return true;
     }
 
     private void showMessage(String message) {

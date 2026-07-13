@@ -70,6 +70,14 @@
                 android:layout_marginLeft="10dp"
                 />
         </LinearLayout>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="70dp"
+            android:layout_marginRight="10dp"
+            android:text="账号长度 3-20 位，仅支持字母、数字和下划线"
+            android:textColor="#666666"
+            android:textSize="12sp" />
         <!-- 第二个文本编辑框  输入密码 -->
         <LinearLayout
             android:layout_width="match_parent"
@@ -89,6 +97,14 @@
                 android:inputType="textPassword"
                 android:hint="请输入密码" />
         </LinearLayout>
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="70dp"
+            android:layout_marginRight="10dp"
+            android:text="密码长度 6-20 位，需同时包含字母和数字"
+            android:textColor="#666666"
+            android:textSize="12sp" />
         <!-- 第三个文本编辑框  再次输入密码 -->
         <LinearLayout
             android:layout_width="match_parent"

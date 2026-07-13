@@ -53,6 +53,8 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         accountInput = findViewById(R.id.et_loginactivity_account);
         passwordInput = findViewById(R.id.et_loginactivity_password);
         rememberAccount = findViewById(R.id.remember_pass);
+        accountInput.setHint("请输入账号");
+        passwordInput.setHint("请输入密码");
 
         backButton.setOnClickListener(this);
         loginButton.setOnClickListener(this);
@@ -74,8 +76,14 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
     private void login() {
         String account = accountInput.getText().toString().trim();
         String password = passwordInput.getText().toString();
-        if (TextUtils.isEmpty(account) || TextUtils.isEmpty(password)) {
-            Toast.makeText(this, "\u8bf7\u8f93\u5165\u8d26\u53f7\u548c\u5bc6\u7801", Toast.LENGTH_SHORT).show();
+        if (TextUtils.isEmpty(account)) {
+            accountInput.setError("请输入账号");
+            accountInput.requestFocus();
+            return;
+        }
+        if (TextUtils.isEmpty(password)) {
+            passwordInput.setError("请输入密码");
+            passwordInput.requestFocus();
             return;
         }
 
