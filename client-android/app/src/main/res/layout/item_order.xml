@@ -81,4 +81,44 @@
         android:layout_marginTop="6dp"
         android:textColor="@color/ui_accent"
         android:textSize="13sp" />
+
+    <LinearLayout
+        android:id="@+id/layout_order_actions"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="end"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/btn_order_cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:background="@drawable/selector_order_action_danger"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:minWidth="72dp"
+            android:paddingLeft="14dp"
+            android:paddingRight="14dp"
+            android:text="取消订单"
+            android:textColor="@color/ui_danger"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/btn_order_review"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:layout_marginLeft="8dp"
+            android:background="@drawable/selector_order_action_primary"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:minWidth="72dp"
+            android:paddingLeft="14dp"
+            android:paddingRight="14dp"
+            android:text="评价"
+            android:textColor="@color/ui_primary"
+            android:textSize="13sp" />
+    </LinearLayout>
 </LinearLayout>

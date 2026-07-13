@@ -10,7 +10,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
@@ -46,7 +45,6 @@ public class PersonalFragment extends Fragment {
         orderListView = view.findViewById(R.id.List_myOrder);
 
         orderListView.setEmptyView(emptyOrderTextView);
-        orderListView.setOnItemClickListener(this::onOrderItemClick);
         exitTextView.setOnClickListener(v -> showLogoutConfirmation());
 
         refreshContent();
@@ -110,7 +108,7 @@ public class PersonalFragment extends Fragment {
     private void loadOrderHistory() {
         CommonRequest request = new CommonRequest();
         request.addRequestParam("account", Constant.account);
-        sendHttpPostRequest(Constant.URL_OrderRecord, request, new ResponseHandler() {
+        sendHttpPostRequest(Constant.URL_OrderRecord, request, orderHistoryErrorHandler, new ResponseHandler() {
             @Override
             public void success(CommonResponse response) {
                 if (!isAdded()) {
@@ -118,7 +116,17 @@ public class PersonalFragment extends Fragment {
                 }
 
                 LoadingDialogUtil.cancelLoading();
-                orderAdapter = new OrderAdapter(requireActivity(), response.getDataList());
+                orderAdapter = new OrderAdapter(requireActivity(), response.getDataList(), new OrderAdapter.OnOrderActionListener() {
+                    @Override
+                    public void onCancelOrder(HashMap<String, String> order) {
+                        showCancelOrderConfirmation(order.get("orderId"), order.get("name"));
+                    }
+
+                    @Override
+                    public void onReviewOrder(HashMap<String, String> order) {
+                        showReviewDialog(order);
+                    }
+                });
                 orderListView.setAdapter(orderAdapter);
             }
 
@@ -135,36 +143,25 @@ public class PersonalFragment extends Fragment {
         });
     }
 
-    private void onOrderItemClick(AdapterView<?> parent, View itemView, int position, long id) {
-        if (!isAdded() || !isLoggedIn()) {
+    private void showCancelOrderConfirmation(String orderId, String name) {
+        if (!isAdded()) {
             return;
         }
 
-        HashMap<String, String> order = (HashMap<String, String>) parent.getItemAtPosition(position);
-        String orderId = order.get("orderId");
-        String name = order.get("name");
-        if ("CANCELLED".equals(order.get("status"))) {
-            DialogUtil.showHintDialog(requireContext(), "\u8be5\u8ba2\u5355\u5df2\u53d6\u6d88", false);
-            return;
-        }
-
-        View.OnClickListener cancelOrderListener = v -> {
+        View.OnClickListener backListener = v -> DialogUtil.dismissDialog();
+        View.OnClickListener confirmListener = v -> {
             DialogUtil.dismissDialog();
             cancelOrder(orderId);
         };
-        View.OnClickListener reviewListener = v -> {
-            DialogUtil.dismissDialog();
-            showReviewDialog(order);
-        };
-
+        String dishName = TextUtils.isEmpty(name) ? "该订单" : name;
         DialogUtil.showDecideDialogWithTitle(
                 requireContext(),
-                "\u8ba2\u5355\u64cd\u4f5c",
-                name == null ? "" : name,
-                "\u53d6\u6d88\u8ba2\u5355",
-                cancelOrderListener,
-                "1".equals(order.get("reviewed")) ? "\u4fee\u6539\u8bc4\u4ef7" : "\u8bc4\u4ef7",
-                reviewListener
+                "确认取消订单",
+                dishName + "\n取消后将不能评价，是否继续？",
+                "返回",
+                backListener,
+                "确认取消",
+                confirmListener
         );
     }
 
@@ -193,10 +190,35 @@ public class PersonalFragment extends Fragment {
                 Toast.makeText(requireContext(), "\u8bf7\u9009\u62e9\u8bc4\u5206", Toast.LENGTH_SHORT).show();
                 return;
             }
-            submitReview(order.get("orderId"), rating, content);
+            showReviewSubmissionConfirmation(order.get("orderId"), name, rating, content);
         });
 
         DialogUtil.showCustomDialog(requireContext(), reviewView, true);
+    }
+
+    private void showReviewSubmissionConfirmation(String orderId,
+                                                  String name,
+                                                  int rating,
+                                                  String content) {
+        if (!isAdded()) {
+            return;
+        }
+
+        View.OnClickListener cancelListener = v -> DialogUtil.dismissDialog();
+        View.OnClickListener confirmListener = v -> {
+            DialogUtil.dismissDialog();
+            submitReview(orderId, rating, content);
+        };
+        String dishName = TextUtils.isEmpty(name) ? "该订单" : name;
+        DialogUtil.showDecideDialogWithTitle(
+                requireContext(),
+                "确认提交评价",
+                dishName + "\n评分：" + rating + " 星，是否继续？",
+                "取消",
+                cancelListener,
+                "确认提交",
+                confirmListener
+        );
     }
 
     private int parseRating(String ratingText) {
@@ -214,7 +236,7 @@ public class PersonalFragment extends Fragment {
         request.addRequestParam("orderId", orderId == null ? "" : orderId);
         request.addRequestParam("rating", String.valueOf(rating));
         request.addRequestParam("content", content == null ? "" : content);
-        sendHttpPostRequest(Constant.URL_Review, request, new ResponseHandler() {
+        sendHttpPostRequest(Constant.URL_Review, request, reviewErrorHandler, new ResponseHandler() {
             @Override
             public void success(CommonResponse response) {
                 if (!isAdded()) {
@@ -241,7 +263,7 @@ public class PersonalFragment extends Fragment {
         CommonRequest request = new CommonRequest();
         request.addRequestParam("account", Constant.account);
         request.addRequestParam("orderId", orderId == null ? "" : orderId);
-        sendHttpPostRequest(Constant.URL_CancelOrder, request, new ResponseHandler() {
+        sendHttpPostRequest(Constant.URL_CancelOrder, request, cancelErrorHandler, new ResponseHandler() {
             @Override
             public void success(CommonResponse response) {
                 if (!isAdded()) {
@@ -265,27 +287,26 @@ public class PersonalFragment extends Fragment {
 
     private void sendHttpPostRequest(String url,
                                      CommonRequest request,
+                                     Handler errorHandler,
                                      ResponseHandler responseHandler) {
-        new HttpPostTask(request, mHandler, responseHandler).execute(url);
+        new HttpPostTask(request, errorHandler, responseHandler).execute(url);
     }
 
-    private final Handler mHandler = new Handler(Looper.getMainLooper()) {
-        @Override
-        public void handleMessage(@NonNull Message msg) {
-            super.handleMessage(msg);
-
-            if (!isAdded()) {
-                return;
-            }
-
-            String errorMsg = msg.obj == null ? "" : msg.obj.toString();
-            if (msg.what == Constant.HANDLER_HTTP_SEND_FAIL) {
+    private Handler createErrorHandler(String message) {
+        return new Handler(Looper.getMainLooper()) {
+            @Override
+            public void handleMessage(@NonNull Message msg) {
+                if (!isAdded()) {
+                    return;
+                }
+                String errorMsg = msg.obj == null ? "" : msg.obj.toString();
                 LogUtil.logErr(errorMsg);
-                Toast.makeText(requireContext(), "\u8bf7\u6c42\u53d1\u9001\u5931\u8d25\uff0c\u8bf7\u91cd\u8bd5", Toast.LENGTH_SHORT).show();
-            } else if (msg.what == Constant.HANDLER_HTTP_RECEIVE_FAIL) {
-                LogUtil.logErr(errorMsg);
-                Toast.makeText(requireContext(), "\u83b7\u53d6\u8ba2\u5355\u8bb0\u5f55\u5931\u8d25", Toast.LENGTH_SHORT).show();
+                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
             }
-        }
-    };
+        };
+    }
+
+    private final Handler orderHistoryErrorHandler = createErrorHandler("获取订单记录失败");
+    private final Handler reviewErrorHandler = createErrorHandler("评价提交失败，请检查服务器");
+    private final Handler cancelErrorHandler = createErrorHandler("取消订单失败，请重试");
 }
