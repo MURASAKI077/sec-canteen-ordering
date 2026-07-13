@@ -124,7 +124,7 @@ public class HomeFragment extends Fragment {
         View.OnClickListener cancelListener = v -> DialogUtil.dismissDialog();
         View.OnClickListener confirmListener = v -> {
             DialogUtil.dismissDialog();
-            OrderHelper.order(requireActivity(), mHandler, room, window, name, price, Constant.account, null);
+            PayActivity.start(requireActivity(), room, window, name, price);
         };
 
         DialogUtil.showDecideDialogWithTitle(

@@ -13,6 +13,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Software_Engineering_Course">
         <activity
+            android:name=".PayActivity"
+            android:exported="false" />
+        <activity
             android:name=".RegisterActivity"
             android:exported="false" />
         <activity

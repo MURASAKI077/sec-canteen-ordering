@@ -12,6 +12,7 @@ public class Constant {
     public static String URL_OrderRecord = URL + "OrderRecordServlet";
     public static String URL_CancelOrder = URL + "CancelOrderServlet";
     public static String URL_Review = URL + "ReviewServlet";
+    public static String URL_Pay = URL + "PayServlet";
     public static boolean landing;
     public static String account;
 }
