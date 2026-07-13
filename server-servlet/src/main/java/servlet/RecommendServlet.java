@@ -65,7 +65,8 @@ public class RecommendServlet extends HttpServlet {
                         + "\n\n注：DeepSeek 暂时调用失败，已使用本地规则推荐。", "local");
             }
         }
-        return new RecommendationResult(localRecommend(message, dishes), "local");
+        return new RecommendationResult(localRecommend(message, dishes)
+                + "\n\n注：尚未配置有效 DeepSeek API Key，当前使用本地规则推荐。", "local");
     }
 
     private String callDeepSeek(AiConfig config, String message, List<Dish> dishes) throws Exception {
