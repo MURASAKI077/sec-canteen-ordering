@@ -1,16 +1,13 @@
 package com.example.sec_android;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
-import android.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.Button;
-import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -20,13 +17,12 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
 public class LoginActivity extends AppCompatActivity implements View.OnClickListener {
-    private SharedPreferences preferences;
+    private LoginSessionManager sessionManager;
     private ImageView backButton;
     private TextView registerButton;
     private EditText accountInput;
     private EditText passwordInput;
     private Button loginButton;
-    private CheckBox rememberAccount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,16 +30,11 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         setContentView(R.layout.activity_login);
         initView();
 
-        preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        boolean shouldRemember = preferences.getBoolean("remember_account", false);
-        if (shouldRemember) {
-            accountInput.setText(preferences.getString("account", ""));
-            rememberAccount.setChecked(true);
+        sessionManager = new LoginSessionManager(this);
+        if (sessionManager.isRememberLoginEnabled()) {
+            accountInput.setText(sessionManager.getAccount());
+            passwordInput.setText(sessionManager.getPassword());
         }
-        preferences.edit()
-                .remove("password")
-                .remove("remember_password")
-                .apply();
     }
 
     private void initView() {
@@ -52,7 +43,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
         registerButton = findViewById(R.id.tv_loginactivity_register);
         accountInput = findViewById(R.id.et_loginactivity_account);
         passwordInput = findViewById(R.id.et_loginactivity_password);
-        rememberAccount = findViewById(R.id.remember_pass);
         accountInput.setHint("请输入账号");
         passwordInput.setHint("请输入密码");
 
@@ -95,11 +85,13 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
             @Override
             public void success(CommonResponse response) {
                 LoadingDialogUtil.cancelLoading();
-                saveRememberedAccount(account);
                 Constant.landing = true;
                 Constant.account = account;
+                sessionManager.saveLogin(account, password);
                 Toast.makeText(LoginActivity.this, response.getResMsg(), Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
                 finish();
             }
 
@@ -111,20 +103,6 @@ public class LoginActivity extends AppCompatActivity implements View.OnClickList
                         Toast.LENGTH_SHORT).show();
             }
         }).execute(Constant.URL_Login);
-    }
-
-    private void saveRememberedAccount(String account) {
-        boolean remember = rememberAccount.isChecked();
-        SharedPreferences.Editor editor = preferences.edit()
-                .putBoolean("remember_account", remember)
-                .remove("password")
-                .remove("remember_password");
-        if (remember) {
-            editor.putString("account", account);
-        } else {
-            editor.remove("account");
-        }
-        editor.apply();
     }
 
     private final Handler handler = new Handler(Looper.getMainLooper()) {

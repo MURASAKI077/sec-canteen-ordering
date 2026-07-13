@@ -97,13 +97,11 @@ public class PersonalFragment extends Fragment {
     }
 
     private void logout() {
-        Constant.landing = false;
-        Constant.account = "";
+        new LoginSessionManager(requireContext()).clear();
 
         Intent intent = new Intent(requireContext(), LoginActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
-        requireActivity().finish();
     }
 
     private void loadOrderHistory() {
