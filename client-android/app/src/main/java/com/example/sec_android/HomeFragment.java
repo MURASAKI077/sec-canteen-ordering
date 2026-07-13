@@ -4,6 +4,9 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
 import android.os.Message;
+import android.graphics.Color;
+import android.graphics.Typeface;
+import android.graphics.drawable.GradientDrawable;
 import android.util.Log;
 import android.view.inputmethod.EditorInfo;
 import android.view.LayoutInflater;
@@ -11,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -22,11 +26,18 @@ import androidx.fragment.app.Fragment;
 public class HomeFragment extends Fragment {
 
     private static final String TAG = "HomeFragment";
+    private static final String CATEGORY_ALL = "全部";
+    private static final String[] CATEGORIES = {
+            CATEGORY_ALL, "主食套餐", "粉面小吃", "饮品甜点", "清真风味", "家常小炒"
+    };
 
     private Button searchButton;
     private EditText searchInput;
+    private LinearLayout categoryLayout;
     private ListView dishListView;
     private ProductAdapter dishAdapter;
+    private java.util.ArrayList<java.util.HashMap<String, String>> allDishes = new java.util.ArrayList<>();
+    private String selectedCategory = CATEGORY_ALL;
 
     @Nullable
     @Override
@@ -42,6 +53,7 @@ public class HomeFragment extends Fragment {
     private void initView(View view) {
         searchButton = view.findViewById(R.id.BTsearch);
         searchInput = view.findViewById(R.id.ETsearch);
+        categoryLayout = view.findViewById(R.id.layout_dish_categories);
         dishListView = view.findViewById(R.id.home_list);
 
         searchButton.setOnClickListener(v -> searchDishes());
@@ -54,6 +66,7 @@ public class HomeFragment extends Fragment {
             return false;
         });
 
+        buildCategoryTabs();
     }
 
     private void loadDishList() {
@@ -61,7 +74,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void searchDishes() {
-        loadDishList(searchInput.getText().toString().trim());
+        applyDishFilters();
     }
 
     private void loadDishList(String keyword) {
@@ -76,18 +89,8 @@ public class HomeFragment extends Fragment {
                 }
 
                 LoadingDialogUtil.cancelLoading();
-                dishAdapter = new ProductAdapter(requireActivity(), response.getDataList(), new ProductAdapter.OnDishActionListener() {
-                    @Override
-                    public void onOrderDish(java.util.HashMap<String, String> dish) {
-                        showOrderConfirmation(dish);
-                    }
-
-                    @Override
-                    public void onViewReviews(java.util.HashMap<String, String> dish) {
-                        loadDishReviews(dish);
-                    }
-                });
-                dishListView.setAdapter(dishAdapter);
+                allDishes = response.getDataList();
+                applyDishFilters();
 
                 if (response.getDataList().isEmpty()) {
                     Toast.makeText(requireContext(), "\u5217\u8868\u6682\u65e0\u6570\u636e", Toast.LENGTH_SHORT).show();
@@ -105,6 +108,109 @@ public class HomeFragment extends Fragment {
                 Toast.makeText(requireContext(), "\u83b7\u53d6\u83dc\u5355\u5931\u8d25", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void buildCategoryTabs() {
+        if (categoryLayout == null || !isAdded()) {
+            return;
+        }
+
+        categoryLayout.removeAllViews();
+        for (String category : CATEGORIES) {
+            TextView tab = new TextView(requireContext());
+            tab.setText(category);
+            tab.setGravity(android.view.Gravity.CENTER);
+            tab.setTextSize(15);
+            tab.setMinWidth(dp(84));
+            tab.setPadding(dp(14), 0, dp(14), 0);
+            LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.WRAP_CONTENT,
+                    dp(34)
+            );
+            params.setMarginEnd(dp(8));
+            tab.setLayoutParams(params);
+            tab.setOnClickListener(v -> {
+                selectedCategory = category;
+                buildCategoryTabs();
+                applyDishFilters();
+            });
+            styleCategoryTab(tab, category.equals(selectedCategory));
+            categoryLayout.addView(tab);
+        }
+    }
+
+    private void styleCategoryTab(TextView tab, boolean selected) {
+        GradientDrawable background = new GradientDrawable();
+        background.setCornerRadius(dp(17));
+        background.setColor(selected ? Color.rgb(76, 175, 80) : Color.argb(220, 255, 255, 255));
+        background.setStroke(dp(1), selected ? Color.rgb(76, 175, 80) : Color.rgb(205, 230, 210));
+        tab.setBackground(background);
+        tab.setTextColor(selected ? Color.WHITE : Color.rgb(46, 125, 50));
+        tab.setTypeface(null, selected ? Typeface.BOLD : Typeface.NORMAL);
+    }
+
+    private void applyDishFilters() {
+        if (dishListView == null || !isAdded()) {
+            return;
+        }
+
+        String keyword = searchInput == null ? "" : searchInput.getText().toString().trim().toLowerCase(java.util.Locale.ROOT);
+        java.util.ArrayList<java.util.HashMap<String, String>> filtered = new java.util.ArrayList<>();
+        for (java.util.HashMap<String, String> dish : allDishes) {
+            if (!CATEGORY_ALL.equals(selectedCategory) && !selectedCategory.equals(categoryOf(dish))) {
+                continue;
+            }
+            if (!keyword.isEmpty()
+                    && !value(dish, "name").toLowerCase(java.util.Locale.ROOT).contains(keyword)
+                    && !value(dish, "window").toLowerCase(java.util.Locale.ROOT).contains(keyword)
+                    && !value(dish, "room").toLowerCase(java.util.Locale.ROOT).contains(keyword)) {
+                continue;
+            }
+            filtered.add(dish);
+        }
+
+        dishAdapter = new ProductAdapter(requireActivity(), filtered, new ProductAdapter.OnDishActionListener() {
+            @Override
+            public void onOrderDish(java.util.HashMap<String, String> dish) {
+                showOrderConfirmation(dish);
+            }
+
+            @Override
+            public void onViewReviews(java.util.HashMap<String, String> dish) {
+                loadDishReviews(dish);
+            }
+        });
+        dishListView.setAdapter(dishAdapter);
+    }
+
+    private String categoryOf(java.util.HashMap<String, String> dish) {
+        String text = value(dish, "name") + " " + value(dish, "window") + " " + value(dish, "room");
+        if (containsAny(text, "牛奶", "鲜果", "甜点", "蛋糕", "菠萝包", "肉松卷")) {
+            return "饮品甜点";
+        }
+        if (text.contains("清真")) {
+            return "清真风味";
+        }
+        if (containsAny(text, "烤冷面", "小面", "米粉", "素粉", "水饺", "煎包", "煎饺", "粥")) {
+            return "粉面小吃";
+        }
+        if (containsAny(text, "土豆丝", "毛血旺", "馒头", "花卷", "窝头", "绿豆芽", "包菜", "油菜", "基本伙", "大碗炖菜")) {
+            return "家常小炒";
+        }
+        return "主食套餐";
+    }
+
+    private boolean containsAny(String text, String... needles) {
+        for (String needle : needles) {
+            if (text.contains(needle)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private int dp(int value) {
+        return Math.round(value * getResources().getDisplayMetrics().density);
     }
 
     private void showOrderConfirmation(java.util.HashMap<String, String> dish) {

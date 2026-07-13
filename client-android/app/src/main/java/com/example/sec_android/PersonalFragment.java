@@ -12,8 +12,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.RatingBar;
+import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -27,10 +30,16 @@ import java.util.HashMap;
 public class PersonalFragment extends Fragment {
 
     private static final String TAG = "PersonalFragment";
+    private static final String ORDER_FILTER_ALL = "全部订单";
+    private static final String ORDER_FILTER_ACTIVE = "未取消订单";
+    private static final String ORDER_FILTER_CANCELLED = "已取消订单";
 
     private TextView accountTextView;
     private ListView orderListView;
+    private Spinner orderFilterSpinner;
     private OrderAdapter orderAdapter;
+    private ArrayList<HashMap<String, String>> allOrders = new ArrayList<>();
+    private String selectedOrderFilter = ORDER_FILTER_ALL;
 
     @Nullable
     @Override
@@ -42,13 +51,39 @@ public class PersonalFragment extends Fragment {
         accountTextView = view.findViewById(R.id.tv_personal_account);
         TextView exitTextView = view.findViewById(R.id.tv_personal_exit);
         TextView emptyOrderTextView = view.findViewById(R.id.tv_order_empty);
+        orderFilterSpinner = view.findViewById(R.id.sp_order_filter);
         orderListView = view.findViewById(R.id.List_myOrder);
 
         orderListView.setEmptyView(emptyOrderTextView);
         exitTextView.setOnClickListener(v -> showLogoutConfirmation());
+        initOrderFilterSpinner();
 
         refreshContent();
         return view;
+    }
+
+    private void initOrderFilterSpinner() {
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(
+                requireContext(),
+                android.R.layout.simple_spinner_item,
+                new String[]{ORDER_FILTER_ALL, ORDER_FILTER_ACTIVE, ORDER_FILTER_CANCELLED}
+        );
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        orderFilterSpinner.setAdapter(adapter);
+        orderFilterSpinner.setSelection(0);
+        orderFilterSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                selectedOrderFilter = (String) parent.getItemAtPosition(position);
+                applyOrderFilter();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                selectedOrderFilter = ORDER_FILTER_ALL;
+                applyOrderFilter();
+            }
+        });
     }
 
     @Override
@@ -68,8 +103,8 @@ public class PersonalFragment extends Fragment {
 
         if (!isLoggedIn()) {
             accountTextView.setText("");
-            orderAdapter = new OrderAdapter(requireActivity(), new ArrayList<HashMap<String, String>>());
-            orderListView.setAdapter(orderAdapter);
+            allOrders.clear();
+            applyOrderFilter();
             return;
         }
 
@@ -116,18 +151,8 @@ public class PersonalFragment extends Fragment {
                 }
 
                 LoadingDialogUtil.cancelLoading();
-                orderAdapter = new OrderAdapter(requireActivity(), response.getDataList(), new OrderAdapter.OnOrderActionListener() {
-                    @Override
-                    public void onCancelOrder(HashMap<String, String> order) {
-                        showCancelOrderConfirmation(order.get("orderId"), order.get("name"));
-                    }
-
-                    @Override
-                    public void onReviewOrder(HashMap<String, String> order) {
-                        showReviewDialog(order);
-                    }
-                });
-                orderListView.setAdapter(orderAdapter);
+                allOrders = response.getDataList();
+                applyOrderFilter();
             }
 
             @Override
@@ -141,6 +166,38 @@ public class PersonalFragment extends Fragment {
                 Toast.makeText(requireContext(), "\u83b7\u53d6\u8ba2\u5355\u8bb0\u5f55\u5931\u8d25", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void applyOrderFilter() {
+        if (orderListView == null || !isAdded()) {
+            return;
+        }
+
+        ArrayList<HashMap<String, String>> filtered = new ArrayList<>();
+        for (HashMap<String, String> order : allOrders) {
+            String status = order.get("status");
+            boolean cancelled = "CANCELLED".equals(status);
+            if (ORDER_FILTER_ACTIVE.equals(selectedOrderFilter) && cancelled) {
+                continue;
+            }
+            if (ORDER_FILTER_CANCELLED.equals(selectedOrderFilter) && !cancelled) {
+                continue;
+            }
+            filtered.add(order);
+        }
+
+        orderAdapter = new OrderAdapter(requireActivity(), filtered, new OrderAdapter.OnOrderActionListener() {
+            @Override
+            public void onCancelOrder(HashMap<String, String> order) {
+                showCancelOrderConfirmation(order.get("orderId"), order.get("name"));
+            }
+
+            @Override
+            public void onReviewOrder(HashMap<String, String> order) {
+                showReviewDialog(order);
+            }
+        });
+        orderListView.setAdapter(orderAdapter);
     }
 
     private void showCancelOrderConfirmation(String orderId, String name) {
