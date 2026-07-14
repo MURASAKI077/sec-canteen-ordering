@@ -60,11 +60,25 @@
         android:orientation="vertical"
         android:padding="8dp">
 
-        <TextView
-            style="@style/UiTextTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/my_order" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="42dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                style="@style/UiTextTitle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/my_order" />
+
+            <Spinner
+                android:id="@+id/sp_order_filter"
+                android:layout_width="150dp"
+                android:layout_height="36dp"
+                android:spinnerMode="dropdown" />
+        </LinearLayout>
 
         <TextView
             style="@style/UiTextBody"
