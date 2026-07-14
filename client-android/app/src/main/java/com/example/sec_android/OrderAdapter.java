@@ -74,6 +74,9 @@ public class OrderAdapter extends BaseAdapter {
         holder.location.setText(value(order, "room") + " · " + value(order, "window"));
         holder.status.setText("CANCELLED".equals(status) ? "已取消" : "已下单");
         holder.status.setAlpha("CANCELLED".equals(status) ? 0.55f : 1f);
+        if ("PAID".equals(status)) {
+            holder.status.setText("\u5df2\u652f\u4ed8");
+        }
         holder.time.setText(value(order, "orderTime"));
         holder.orderId.setText("订单 #" + value(order, "orderId"));
         holder.review.setText(buildReviewText(order, status));
@@ -83,13 +86,16 @@ public class OrderAdapter extends BaseAdapter {
 
     private void bindActionButtons(ViewHolder holder, HashMap<String, String> order, String status) {
         boolean canOperate = actionListener != null && !"CANCELLED".equals(status);
-        holder.cancelButton.setEnabled(canOperate);
+        boolean canCancel = actionListener != null && "PLACED".equals(status);
+        holder.cancelButton.setVisibility(canCancel ? View.VISIBLE : View.GONE);
+        holder.reviewButton.setVisibility(canOperate ? View.VISIBLE : View.GONE);
+        holder.cancelButton.setEnabled(canCancel);
         holder.reviewButton.setEnabled(canOperate);
-        holder.cancelButton.setAlpha(canOperate ? 1f : 0.45f);
+        holder.cancelButton.setAlpha(canCancel ? 1f : 0.45f);
         holder.reviewButton.setAlpha(canOperate ? 1f : 0.45f);
         holder.reviewButton.setText("评价");
 
-        holder.cancelButton.setOnClickListener(canOperate ? v -> actionListener.onCancelOrder(order) : null);
+        holder.cancelButton.setOnClickListener(canCancel ? v -> actionListener.onCancelOrder(order) : null);
         holder.reviewButton.setOnClickListener(canOperate ? v -> actionListener.onReviewOrder(order) : null);
     }
 

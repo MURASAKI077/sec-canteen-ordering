@@ -161,9 +161,7 @@ public class HomeFragment extends Fragment {
                 continue;
             }
             if (!keyword.isEmpty()
-                    && !value(dish, "name").toLowerCase(java.util.Locale.ROOT).contains(keyword)
-                    && !value(dish, "window").toLowerCase(java.util.Locale.ROOT).contains(keyword)
-                    && !value(dish, "room").toLowerCase(java.util.Locale.ROOT).contains(keyword)) {
+                    && !value(dish, "name").toLowerCase(java.util.Locale.ROOT).contains(keyword)) {
                 continue;
             }
             filtered.add(dish);

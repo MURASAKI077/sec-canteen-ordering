@@ -46,7 +46,8 @@ public class OrderRecordServlet extends HttpServlet {
                                  "JOIN dishes d ON o.dishId = d.dishId " +
                                  "LEFT JOIN reviews r ON o.orderId = r.orderId " +
                                  "WHERE a.userAccount = ? " +
-                                 "ORDER BY o.orderTime DESC, o.orderId DESC")) {
+                                 "ORDER BY o.orderTime DESC, o.orderId DESC " +
+                                 "LIMIT 50")) {
                 statement.setString(1, account);
                 try (ResultSet resultSet = statement.executeQuery()) {
                     while (resultSet.next()) {
