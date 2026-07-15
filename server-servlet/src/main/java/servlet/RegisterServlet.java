@@ -14,6 +14,7 @@ import java.util.Map;
 
 @WebServlet("/RegisterServlet")
 public class RegisterServlet extends HttpServlet {
+    // 7.15维护
     @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
