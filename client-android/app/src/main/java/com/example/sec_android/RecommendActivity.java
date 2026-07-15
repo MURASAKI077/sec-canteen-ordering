@@ -57,8 +57,7 @@ public class RecommendActivity extends AppCompatActivity {
                 removeLastLoadingMessage();
                 String reply = response.getPropertyMap().get("reply");
                 String mode = response.getPropertyMap().get("mode");
-                addBotMessage((reply == null ? "暂无推荐结果" : reply)
-                        + ("DeepSeek".equals(mode) ? "\n\n来源：DeepSeek 智能推荐" : "\n\n来源：本地菜品规则推荐"));
+                addBotMessage((reply == null ? "暂无推荐结果" : reply) + sourceText(mode));
             }
 
             @Override
@@ -67,6 +66,19 @@ public class RecommendActivity extends AppCompatActivity {
                 addBotMessage(TextUtils.isEmpty(failMsg) ? "推荐失败，请换个说法再试试。" : failMsg);
             }
         }).execute(Constant.URL + "RecommendServlet");
+    }
+
+    private String sourceText(String mode) {
+        if ("DeepSeek".equals(mode)) {
+            return "\n\n来源：DeepSeek 智能推荐";
+        }
+        if ("local".equals(mode)) {
+            return "\n\n来源：本地菜品规则推荐";
+        }
+        if ("empty".equals(mode)) {
+            return "\n\n来源：菜品库为空提示";
+        }
+        return "";
     }
 
     private void addUserMessage(String message) {

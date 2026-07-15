@@ -56,6 +56,12 @@ public class RecommendServlet extends HttpServlet {
     }
 
     private RecommendationResult recommend(String message, List<Dish> dishes) {
+        if (dishes.isEmpty()) {
+            return new RecommendationResult(
+                    "当前菜品库为空，暂无可推荐菜品。请先补充菜品数据后再使用智能推荐功能。",
+                    "empty");
+        }
+
         AiConfig config = AiConfig.load();
         if (config.enabled && config.hasApiKey()) {
             try {
